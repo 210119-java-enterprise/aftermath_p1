@@ -27,6 +27,6 @@ password=<your database account password>
 `
 
 - [x] Basic documentation of the annotations and the xml config file
-- [] MetalModel containment implementation
-- [] CRUD features
+- [ ] MetalModel containment implementation
+- [ ] CRUD features
 
