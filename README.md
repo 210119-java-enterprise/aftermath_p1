@@ -1,10 +1,10 @@
-# Aftermath
+# Aftermath ORM
 This is a custom ORM created by Jonathan "Jay" Norman. It uses a wrapper around JDBC for the purpose of simplifying CRUD operations between a Java application and a SQL database (e.g. Postgres, Maria, MySQL, Oracle). This ORM takes influences from ORMs across languages, such as Hiberate (Java) and Mongoose (Node.js).
 ## Origin of the name
 We assure you that the project has no connection to Dr. Dre and Aftermath Records! Aftermath is a pun on the SQL acronym; SQL is typically pronounced "sequel", and a synonym of "sequel" is "aftermath".
 ## Setup
 Aftermath uses annotations to map POJO/Java Beans to a database meta model. The following annotaions Aftermath provides are:
-1. @PK - Not PK Fire ([:^)](https://www.youtube.com/watch?v=HglT7sTcuv8)); Primary key
+1. @PK - Not PK Fire [:^)](https://www.youtube.com/watch?v=HglT7sTcuv8); Primary key
 2. @FK - Foreign key
 3. @Table - Database table
 4. @Attr - Table column/attribute
