@@ -1,9 +1,9 @@
 # Aftermath ORM
 This is a custom ORM created by Jonathan "Jay" Norman. It uses a wrapper around JDBC for the purpose of simplifying CRUD operations between a Java application and a SQL database (e.g. Postgres, Maria, MySQL, Oracle). This ORM takes influences from ORMs across languages, such as Hiberate (Java) and Mongoose (Node.js).
 ## Origin of the name
-We assure you that the project has no connection to Dr. Dre and Aftermath Records! Aftermath is a pun on the SQL acronym; SQL is typically pronounced "sequel", and a synonym of "sequel" is "aftermath".
+We assure you that our ORM has no connection to Dr. Dre and Aftermath Entertainment! Aftermath is a pun on the SQL acronym; SQL is typically pronounced "sequel", and a synonym of "sequel" is "aftermath".
 ## Setup
-Aftermath uses annotations to map POJO/Java Beans to a database meta model. The following annotaions Aftermath provides are:
+Aftermath uses annotations to map POJO/Java Beans to a database meta model. The following annotations Aftermath provides are:
 1. @PK - Not PK Fire [:^)](https://www.youtube.com/watch?v=HglT7sTcuv8); Primary key
 2. @FK - Foreign key
 3. @Table - Database table
@@ -20,11 +20,12 @@ You will annotate your fields and methods in your POJOs/Java Beans based on what
 </configuration>
 ```
 The application.properties file will contain your database credentials; it's not recommended to post your credentials on Github in plain text, so Aftermath does **not** support the ability to load database credentials directly in the xml file. We also recommend you to include the path to your application.properties file in your .gitignore file. The name of the xml will be "aftermath.conf.xml". The structure you will use for your application.properties file is:
-`
+```
 url=<link to your database>
 user=<username in your database>
 password=<your database account password>
-`
+currentSchema=<name of the schema you're working in>
+```
 
 - [x] Basic documentation of the annotations and the xml config file
 - [ ] MetalModel containment implementation
