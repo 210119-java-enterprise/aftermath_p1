@@ -39,7 +39,7 @@ public class ConnectionFactory {
      * this constructor loads the application.properties file and parses the database credentials.
      */
     private ConnectionFactory() {
-        props = MetaSchemaBuilder.getCredentials();
+
     }
 
     public static ConnectionFactory getInstance() {
@@ -53,7 +53,7 @@ public class ConnectionFactory {
     public Connection getConnection() {
 
         Connection conn = null;
-
+        props = MetaSchemaBuilder.getCredentials();
         try {
             conn = DriverManager.getConnection(
                     props.getProperty("url"),
