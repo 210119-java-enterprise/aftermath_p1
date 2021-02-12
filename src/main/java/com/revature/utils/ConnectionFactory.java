@@ -1,15 +1,6 @@
 package com.revature.utils;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
@@ -48,22 +39,13 @@ public class ConnectionFactory {
      * this constructor loads the application.properties file and parses the database credentials.
      */
     private ConnectionFactory() {
-        try {
-            DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document afterMathConfig = dbf.parse(new File("./aftermath.conf.xml"));
-
-            Node pojoNode = afterMathConfig.getElementsByTagName("credentials").item(0);
-            Element pojo = (Element) pojoNode;
-            props.load(new FileReader(pojo.getAttribute("src")));
-        } catch (SAXException | ParserConfigurationException | IOException e) {
-            System.out.println(e.getMessage());
-        }
+        props = MetaSchemaBuilder.getCredentials();
     }
 
     public static ConnectionFactory getInstance() {
         return connFactory;
     }
-:
+
     /**
      * Returns a connection to the user specified schema on the main database
      * instance
