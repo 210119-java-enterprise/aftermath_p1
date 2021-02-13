@@ -3,13 +3,12 @@ package com.revature.utils;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
-import com.revature.annotations.*;
 
 /**
  * This class contains public static accessors that allows users to add their POJOs and database credentials
  */
 public class MetaSchemaBuilder {
-    private static HashMap<String, Class<?>> metaSchemas = new HashMap<>();
+    private static HashMap<String, MetaModel<Class<?>>> metaSchemas = new HashMap<>();
     private static MetaSchemaBuilder metaBuilderFactory = new MetaSchemaBuilder();
     private static Properties props;
     /**
@@ -17,9 +16,8 @@ public class MetaSchemaBuilder {
      * @param clas Class representation of the user's pojo
      */
     public static void addModel(Class<?> clas) {
-        Class<?>[] classes = new Class<?>[] {PK.class, FK.class};
         String className = clas.getSimpleName();
-        metaSchemas.put(className, clas);
+        metaSchemas.put(className, new MetaModel<Class<?>>((Class<Class<?>>) clas));
     }
 
     /**
@@ -43,4 +41,13 @@ public class MetaSchemaBuilder {
      * @return the application.properties file that contains a user's credentials
      */
     protected static Properties getCredentials() { return MetaSchemaBuilder.props; }
+
+    /**
+     * Gives the user a meta model based on the classname provided in the params
+     * @param className name of class that's associated with the metamodel
+     * @return meta model with CRUD functionality
+     */
+    public static MetaModel<Class<?>> getModel(String className) {
+        return metaSchemas.get(className);
+    }
 }

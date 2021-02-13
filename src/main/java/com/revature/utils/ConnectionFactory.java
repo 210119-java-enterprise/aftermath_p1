@@ -15,6 +15,7 @@ import java.util.Properties;
 public class ConnectionFactory {
 
     private static ConnectionFactory connFactory = new ConnectionFactory();
+    private static Connection conn = null;
 
     /**
      * This is used to read the application.properties file in the resources folder
@@ -51,19 +52,20 @@ public class ConnectionFactory {
      * instance
      */
     public Connection getConnection() {
-
-        Connection conn = null;
         props = MetaSchemaBuilder.getCredentials();
-        try {
-            conn = DriverManager.getConnection(
-                    props.getProperty("url"),
-                    props.getProperty("username"),
-                    props.getProperty("password")
-            );
-            conn.setSchema(props.getProperty("currentSchema"));
 
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
+        if (conn == null) {
+            try {
+                conn = DriverManager.getConnection(
+                        props.getProperty("url"),
+                        props.getProperty("username"),
+                        props.getProperty("password")
+                );
+                conn.setSchema(props.getProperty("currentSchema"));
+
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
         }
 
         return conn;
