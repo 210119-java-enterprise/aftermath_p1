@@ -15,9 +15,9 @@ public class MetaSchemaBuilder {
      * Adds the class representation of a user defined POJO
      * @param clas Class representation of the user's pojo
      */
-    public static void addModel(Class<?> clas) {
+    public static <T> void addModel(Class<T> clas) {
         String className = clas.getSimpleName();
-        metaSchemas.put(className, new MetaModel<Class<?>>((Class<Class<?>>) clas));
+        metaSchemas.put(className, (MetaModel<Class<?>>) new MetaModel<T>(clas));
     }
 
     /**

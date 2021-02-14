@@ -9,7 +9,7 @@ Aftermath uses annotations to map POJO/Java Beans to a database meta model. The 
 3. @Table - Database table
 4. @Attr - Table column/attribute
 
-You will annotate your fields and methods in your POJOs/Java Beans based on what they represent in the database. All the annotations have a name parameter so that you can mirror the name that is in the database. For instance, if you type @PK(name = "accountId"), this tells Aftermath that the annotated member is associated with an accountId that exists on your database. After the creation of your POJOs/Java Beans, add the class representation of your models in MetaSchemaBuilder, like this:
+You will annotate your fields and methods in your POJOs/Java Beans based on what they represent in the database. Make sure that you are using traditional getters and setters for your POJOs in order to integrate with Aftermath correctly. All the annotations have a name parameter so that you can mirror the name that is in the database. For instance, if you type @PK(columnName = "accountId"), this tells Aftermath that the annotated member is associated with an accountId that exists on your database. After the creation of your POJOs/Java Beans, add the class representation of your models in MetaSchemaBuilder, like this:
 
 ```java
 MetaSchemaBuilder.addModel(yourModelInstance.class);
