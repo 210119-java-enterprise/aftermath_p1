@@ -20,7 +20,7 @@ public class ConnectionFactory {
     /**
      * This is used to read the application.properties file in the resources folder
      */
-    private Properties props = new Properties();
+    private static Properties props = new Properties();
 
     /**
      * This static block ensures that the database driver is loaded
@@ -48,12 +48,18 @@ public class ConnectionFactory {
     }
 
     /**
+     * Internal method used for giving the connection factory a user's credentials
+     * @return the application.properties file that contains a user's credentials
+     */
+    public static void addCredentials(Properties props) {
+        ConnectionFactory.props = props;
+    }
+
+    /**
      * Returns a connection to the user specified schema on the main database
      * instance
      */
     public Connection getConnection() {
-        props = MetaSchemaBuilder.getCredentials();
-
         if (conn == null) {
             try {
                 conn = DriverManager.getConnection(
