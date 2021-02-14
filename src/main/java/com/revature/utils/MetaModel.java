@@ -89,7 +89,7 @@ public class MetaModel<T> {
 
     public MetaModel<T> grab(String[] attrs) {
         ps = null; // clear the prepared statement
-
+        appliedAttrs.clear();
         try {
             Table table = clas.getAnnotation(Table.class);
             String tableName = table.tableName();
@@ -100,7 +100,8 @@ public class MetaModel<T> {
                 delimiter = (i < attrs.length - 1) ? ", " : "";
                 for (AttrField attr : attrFields) {
                     if (attr.getColumnName().equals(attrs[i])) {
-                        queryPlaceholders.append("?" + delimiter);
+                        queryPlaceholders.append(attrs[i] + delimiter);
+                        appliedAttrs.add(attr);
                         break;
                     }
                 }
@@ -151,30 +152,6 @@ public class MetaModel<T> {
         return attrFields;
     }
 
-    private void buildMultAttrPreparedStatement(String[] selectedAttrs) {
-        for (int i=0; i<selectedAttrs.length; i++) {
-            String currentAttrStr = selectedAttrs[i];
-
-            for (AttrField attr : attrFields) {
-                if (attr.getColumnName().equals(currentAttrStr)) {
-                    try {
-                        String fieldTypeStr = attr.getType().getSimpleName();
-                        if (fieldTypeStr.equals("String")) {
-                            ps.setString(i + 1, selectedAttrs[i]);
-                        } else if (fieldTypeStr.equals("int")) {
-                            ps.setInt(i + 1, Integer.parseInt(selectedAttrs[i]));
-                        } else if (fieldTypeStr.equals("double")) {
-                            ps.setDouble(i + 1, Double.parseDouble(selectedAttrs[i]));
-                        }
-                    } catch (SQLException e) {
-                        System.out.println(e.getMessage());
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
     public ArrayList<T> runGrab() {
         ArrayList<T> models = new ArrayList<>();
         try {
@@ -185,8 +162,14 @@ public class MetaModel<T> {
             while (rs.next()) {
                 model = clas.newInstance();
                 Method pkSetId = getMethodByFieldName("setId");
-                int pkk = rs.getInt(pkField.getColumnName());
-                pkSetId.invoke(model, pkk);
+
+                try {
+                    int pkk = rs.getInt(pkField.getColumnName());
+                    pkSetId.invoke(model, pkk);
+                } catch (SQLException e) {
+                    // do nothing; added try-catch block since ResultSet throws an exception if the params aren't
+                    // in the result set. Sometimes, we don't need to retrieve a PK
+                }
 
                 for (AttrField selectedAttr: appliedAttrs) {
                     Class<?> type = selectedAttr.getType();
