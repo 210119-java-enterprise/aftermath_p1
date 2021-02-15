@@ -32,7 +32,7 @@ password=<your database account password>
 currentSchema=<name of the schema you're working in>
 ```
 
-In order to load the application.properties file into Aftermath, use the MetaSchemaBuilder.addCredentials static method, like this:
+It should be noted that application.properties files have no quotes for their strings, so type your string values without quotes. In order to load the application.properties file into Aftermath, use the ConnectionFactory.addCredentials static method, like this:
 
 ```java
 try {
