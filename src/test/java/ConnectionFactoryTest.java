@@ -11,14 +11,14 @@ import static org.junit.Assert.*;
 
 public class ConnectionFactoryTest {
     @Test
-    public void connectionFactoryCreatesOnlyOneFactoryInstance() {
+    public void connectionFactoryShouldCreateOnlyOneFactoryInstance() {
         ConnectionFactory c1 = ConnectionFactory.getInstance();
         ConnectionFactory c2 = ConnectionFactory.getInstance();
         assertSame(c1, c2);
     }
 
     @Test
-    public void connectionFactoryCreatesOnlyOneConnectionInstance() throws Exception {
+    public void connectionFactoryShouldCreateOnlyOneConnectionInstance() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application2.properties"));
         ConnectionFactory.addCredentials(props);
