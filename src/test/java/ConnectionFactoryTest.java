@@ -1,14 +1,10 @@
 import com.revature.utils.ConnectionFactory;
-import com.revature.utils.MetaModel;
-import org.junit.After;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
 import java.util.Properties;
 
 import static org.junit.Assert.*;
