@@ -1,3 +1,5 @@
+package unitTests;
+
 import com.revature.utils.ConnectionFactory;
 import org.junit.Test;
 

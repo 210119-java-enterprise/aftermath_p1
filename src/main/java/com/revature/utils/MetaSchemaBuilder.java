@@ -41,4 +41,6 @@ public class MetaSchemaBuilder<T> {
     public MetaModel<T> getModel(String className) {
         return metaSchemas.get(className);
     }
+
+    public int count() { return metaSchemas.size(); }
 }
