@@ -9,6 +9,9 @@ import java.lang.Class;
  * This class contains public static accessors that allows users to add their POJOs and database credentials
  */
 public class MetaSchemaBuilder<T> {
+    // was originally created to hold multiple MetaModels of different generic types.
+    // However, this proved to me more trouble than its priority merits. Currently, it is used
+    // to make sure
     private HashMap<String, MetaModel<T>> metaSchemas;
     private static Properties props;
     /**

@@ -5,4 +5,5 @@
 /target/maven-archiver
 /target/maven-status
 /target/classes/*.properties
+/target/classes/META-INF/
 /src/main/resources
