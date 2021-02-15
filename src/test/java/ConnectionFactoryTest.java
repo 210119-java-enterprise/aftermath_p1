@@ -29,7 +29,7 @@ public class ConnectionFactoryTest {
     }
 
     @Test
-    public void connectionFactoryShouldThrowAnErrorIfBadCredentialsAreProvided() throws IOException {
+    public void connectionFactoryShouldThrowAnExceptionIfBadCredentialsAreProvided() throws IOException {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application2.properties"));
         ConnectionFactory.addCredentials(props);
@@ -39,7 +39,7 @@ public class ConnectionFactoryTest {
     }
 
     @Test
-    public void connectionFactoryShouldThrowAnErrorIfPropertiesFileIsNotFound() {
+    public void connectionFactoryShouldThrowAnExceptionIfPropertiesFileIsNotFound() {
         Properties props = new Properties();
         assertThrows(FileNotFoundException.class, () -> props.load(new FileReader("src/main/resources/application3.properties")));
     }
