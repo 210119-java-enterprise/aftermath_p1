@@ -1,6 +1,7 @@
 package com.revature.utils;
 import com.revature.annotations.*;
 import com.revature.exceptions.BadMethodChainCallException;
+import com.revature.exceptions.InvalidInputException;
 import com.revature.exceptions.MismatchedInsertArgumentsException;
 import com.sun.istack.internal.Nullable;
 import java.lang.String;
@@ -20,6 +21,7 @@ public class MetaModel<T> {
     private ArrayList<FKField> fkFields;
     private ArrayList<AttrField> attrFields;
     private ArrayList<AttrField> appliedAttrs; // contains the fields/attributes a user wants to select/insert/update/delete
+    private ArrayList<Integer> filteredUpdateAttrIndices;
     private Method[] methods;
     private PreparedStatement ps;
     private Connection conn;
@@ -32,6 +34,7 @@ public class MetaModel<T> {
         this.methods = clas.getMethods();
         this.fkFields = getForeignKeys();
         this.conn = ConnectionFactory.getInstance().getConnection();
+        filteredUpdateAttrIndices = new ArrayList<>();
     }
 
     public ArrayList<FKField> getForeignKeys() {
@@ -68,12 +71,9 @@ public class MetaModel<T> {
 
     /**
      * Corresponds to a select SQL statement
-     * @param attr String that contains one attribute/table column
+     * @param attrs String that contains one attribute/table column
      * @return calling object to enable method chain calling
      */
-    public MetaModel<T> grab(String attr) {
-        return grab(new String[] { attr });
-    }
 
     public MetaModel<T> grab(String... attrs) {
         ps = null; // clear the prepared statement
@@ -184,6 +184,77 @@ public class MetaModel<T> {
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+        }
+
+        return this;
+    }
+
+    public MetaModel<T> change(String... attrs) throws SQLException {
+        if (attrs.length == 0) {
+            throw new InvalidInputException("change() requires params given that it is constructing an update statement");
+        }
+
+        filteredUpdateAttrIndices.clear();
+
+        ps = null;
+        Table table = clas.getAnnotation(Table.class);
+        String tableName = table.tableName();
+        appliedAttrs.clear();
+        int count = 0;
+        for (String attr : attrs) {
+            AttrField currentField = getAttributeByColumnName(attr);
+
+            if (currentField != null) {
+                appliedAttrs.add(currentField);
+            } else {
+                filteredUpdateAttrIndices.add(count);
+            }
+            ++count;
+        }
+
+        StringBuilder setString = new StringBuilder("update " + tableName + " set ");
+
+        for (AttrField attr : appliedAttrs) {
+            setString.append(attr.getColumnName());
+            setString.append(" = ?, ");
+        }
+
+        ps = conn.prepareStatement(setString.toString().substring(0, setString.length()-2));
+        return this;
+    }
+
+    public MetaModel<T> set(String... values) throws SQLException {
+        String psStr = ps.toString();
+
+        if (!psStr.startsWith("update")) {
+            throw new BadMethodChainCallException("set() can only be called off of change()");
+        }
+
+        if (!psStr.contains("?")) {
+            throw new BadMethodChainCallException("cannot call set() off of change() twice");
+        }
+
+        ArrayList<String> filteredValues = new ArrayList<>();
+
+        for (int i = 0; i < values.length; i++) {
+            if (filteredUpdateAttrIndices.contains(i)) {
+                continue;
+            }
+
+            filteredValues.add(values[i]);
+        }
+
+        for (int i = 0; i < appliedAttrs.size(); i++) {
+            AttrField currentAttr = appliedAttrs.get(i);
+            Class<?> type = currentAttr.getType();
+
+            if (type == String.class) {
+                ps.setString(i+1, filteredValues.get(i));
+            } else if (type == int.class) {
+                ps.setInt(i+1, Integer.parseInt(filteredValues.get(i)));
+            } else if (type == double.class) {
+                ps.setDouble(i+1, Double.parseDouble(filteredValues.get(i)));
+            }
         }
 
         return this;

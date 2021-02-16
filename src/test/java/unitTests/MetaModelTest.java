@@ -1,8 +1,5 @@
 package unitTests;
-import com.revature.exceptions.BadMethodChainCallException;
-import com.revature.utils.Conditions;
 import com.revature.utils.ConnectionFactory;
-import com.revature.utils.FKField;
 import com.revature.utils.MetaModel;
 import org.junit.Test;
 import unitTests.mocks.Animal;
@@ -26,7 +23,7 @@ public class MetaModelTest {
 
         MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
 
-        ArrayList<Weightlifter> warr = weightlifter.grab("height", "lastname").runGrab();
+        ArrayList<Weightlifter> warr = weightlifter.grab("height").runGrab();
         warr.stream().forEach(System.out::println);
 
         System.out.println("+========================================================================================+");
@@ -54,6 +51,57 @@ public class MetaModelTest {
         assertTrue(true);
 
         System.out.println(modelAnimal.getPreparedStatement());
+    }
+
+    @Test
+    public void metaModelShouldBuiltAValidUpdateStatement() throws Exception {
+        Properties props = new Properties();
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+
+        weightlifter.change("firstname", "lastname", "weight").set("tani","kaka", "94")
+                .where(EQUALS, "firstname","Tatiana")
+                .and(EQUALS, "country_id", "2");
+
+        // asserting true since this doesn't really matter; we care about the structure of the insert statement
+        // it's probably more efficient to use a regex, but let's print out the results for starters
+        assertTrue(true);
+
+        System.out.println(weightlifter.getPreparedStatement());
+    }
+
+    @Test
+    public void metaModelShouldThrowAnExceptionIfSetIsCalledTwice() throws Exception {
+        Properties props = new Properties();
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+
+        assertThrows(Exception.class, () -> weightlifter.change("firstname","lastname")
+                                                        .set("tani","kaka")
+                                                        .set("tata","kani"));
+    }
+
+    @Test
+    public void metaModelShouldThrowAnExceptionIfSetIsntCalledOnChange() throws Exception {
+        Properties props = new Properties();
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+
+        assertThrows(Exception.class, () -> weightlifter.grab()
+                .set("tani","kaka"));
+    }
+
+    @Test
+    public void metaModelShouldThrowAnExceptionIfChangeHasNoArgs() throws Exception {
+        Properties props = new Properties();
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+
+        assertThrows(Exception.class, () -> weightlifter.change());
     }
 
     @Test
