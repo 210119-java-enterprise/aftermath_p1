@@ -117,6 +117,42 @@ public class MetaModel<T> {
         return this;
     }
 
+    public MetaModel<T> add(String[] attrs) {
+        ps = null;
+        appliedAttrs.clear();
+
+        try {
+            Table table = clas.getAnnotation(Table.class);
+            ArrayList<String> attrFilter = new ArrayList<>();
+            StringBuilder queryPlaceholders = new StringBuilder();
+            String tableName = table.tableName();
+            String delimiter;
+
+            for (int i=0; i<attrs.length; i++) {
+                for (AttrField attr : attrFields) {
+                    if (attr.getColumnName().equals(attrs[i])) {
+                        attrFilter.add(attrs[i]);
+                        appliedAttrs.add(attr);
+                        break;
+                    }
+                }
+            }
+
+            for (int i=0; i<attrFilter.size(); i++) {
+                delimiter = (i < attrFilter.size() - 1) ? ", " : "";
+
+                queryPlaceholders.append(attrFilter.get(i) + delimiter);
+            }
+
+            ps = conn.prepareStatement("insert into " + tableName
+                    + " (" + queryPlaceholders.toString() + ") values ");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return this;
+    }
+
     public String getClassName() {
         return clas.getName();
     }
@@ -152,6 +188,10 @@ public class MetaModel<T> {
         }
 
         return attrFields;
+    }
+
+    public String getPreparedStatement() {
+        return ps.toString();
     }
 
     public ArrayList<T> runGrab() {
