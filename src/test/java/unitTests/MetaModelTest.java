@@ -98,6 +98,41 @@ public class MetaModelTest {
                 .and()
                 .not(EQUALS, "firstname", "Tatiana");
         System.out.println(weightlifter.getPreparedStatement());
+
+        weightlifter.grab("firstname", "height")
+                .where(EQUALS, "country_id", "2")
+                .and(EQUALS, "firstname", "Tatiana")
+                .and(EQUALS, "lastname", "Kashirina");
+        System.out.println(weightlifter.getPreparedStatement());
         assertTrue(true);
+    }
+
+    @Test
+    public void metaModelShouldThrowAnExceptionIfWhereIsCalledSequentially() throws Exception {
+        Properties props = new Properties();
+
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+
+        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+
+        assertThrows(Exception.class,
+                () -> weightlifter.grab()
+                        .where(EQUALS, "country_id", "2")
+                        .where(EQUALS, "country_id", "2"));
+    }
+
+    @Test
+    public void metaModelShouldThrowAnExceptionIfWhereIsCalledOnInsert() throws Exception {
+        Properties props = new Properties();
+
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+
+        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+
+        assertThrows(Exception.class,
+                () -> weightlifter.add("firstname", "lastname")
+                        .where(EQUALS, "country_id", "2"));
     }
 }

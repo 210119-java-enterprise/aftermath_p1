@@ -263,38 +263,7 @@ public class MetaModel<T> {
 
     public MetaModel<T> where(Conditions cond, String attr, String value) throws SQLException {
         where();
-        AttrField selectedField = null;
-
-        String psStr = ps.toString();
-        switch (cond) {
-            case EQUALS:
-                ps = conn.prepareStatement(psStr + attr + " = ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case NOT_EQUALS:
-                ps = conn.prepareStatement(psStr + attr + " <> ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case GT:
-                ps = conn.prepareStatement(psStr + attr + " > ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case LT:
-                ps = conn.prepareStatement(psStr + attr + " < ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-        }
-
-        Class<?> type = selectedField.getType();
-
-        if (type == String.class) {
-            ps.setString(1, value);
-        } else if (type == int.class) {
-            ps.setInt(1, Integer.parseInt(value));
-        } else if (type == double.class) {
-            ps.setDouble(1, Double.parseDouble(value));
-        }
-
+        builtWhereClause(cond, "", attr, value);
         return this;
     }
 
@@ -315,45 +284,19 @@ public class MetaModel<T> {
 
     public MetaModel<T> and(Conditions cond, String attr, String value) throws SQLException {
         and();
-        AttrField selectedField = null;
-
-        String psStr = ps.toString();
-        switch (cond) {
-            case EQUALS:
-                ps = conn.prepareStatement(psStr + attr + " = ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case NOT_EQUALS:
-                ps = conn.prepareStatement(psStr + attr + " <> ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case GT:
-                ps = conn.prepareStatement(psStr + attr + " > ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case LT:
-                ps = conn.prepareStatement(psStr + attr + " < ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-        }
-
-        Class<?> type = selectedField.getType();
-
-        if (type == String.class) {
-            ps.setString(1, value);
-        } else if (type == int.class) {
-            ps.setInt(1, Integer.parseInt(value));
-        } else if (type == double.class) {
-            ps.setDouble(1, Double.parseDouble(value));
-        }
-
+        builtWhereClause(cond, "", attr, value);
         return this;
     }
 
     public MetaModel<T> not(Conditions cond, String attr, String value) throws SQLException {
+        builtWhereClause(cond, "not ", attr, value);
+        return this;
+    }
+
+    private void builtWhereClause(Conditions cond, String logicalOp, String attr, String value) throws SQLException {
         AttrField selectedField = null;
 
-        String psStr = ps.toString() + "not ";
+        String psStr = ps.toString() + logicalOp;
         switch (cond) {
             case EQUALS:
                 ps = conn.prepareStatement(psStr + attr + " = ?");
@@ -382,8 +325,6 @@ public class MetaModel<T> {
         } else if (type == double.class) {
             ps.setDouble(1, Double.parseDouble(value));
         }
-
-        return this;
     }
 
     @Nullable
