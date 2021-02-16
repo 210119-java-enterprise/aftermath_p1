@@ -4,6 +4,8 @@ import com.revature.exceptions.BadMethodChainCallException;
 import com.revature.exceptions.InvalidInputException;
 import com.revature.exceptions.MismatchedInsertArgumentsException;
 import com.sun.istack.internal.Nullable;
+import javafx.scene.control.Tab;
+
 import java.lang.String;
 
 import java.lang.reflect.Field;
@@ -382,6 +384,15 @@ public class MetaModel<T> {
 
     public MetaModel<T> not(Conditions cond, String attr, String value) throws SQLException {
         builtWhereClause(cond, "not ", attr, value);
+        return this;
+    }
+
+    public MetaModel<T> remove() throws SQLException {
+        appliedAttrs.clear();
+        ps = null;
+        Table table = clas.getAnnotation(Table.class);
+        String tableName = table.tableName();
+        ps = conn.prepareStatement("delete from " + tableName);
         return this;
     }
 

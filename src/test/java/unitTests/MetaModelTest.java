@@ -184,4 +184,23 @@ public class MetaModelTest {
                 () -> weightlifter.add("firstname", "lastname")
                         .where(EQUALS, "country_id", "2"));
     }
+
+    @Test
+    public void metaModelShouldBuiltAValidDeleteStatement() throws Exception {
+        Properties props = new Properties();
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+
+        weightlifter.remove()
+                .where(EQUALS, "firstname","Tatiana")
+                .and(EQUALS, "country_id", "2")
+                .or(LTE, "height", "200");
+
+        // asserting true since this doesn't really matter; we care about the structure of the insert statement
+        // it's probably more efficient to use a regex, but let's print out the results for starters
+        assertTrue(true);
+
+        System.out.println(weightlifter.getPreparedStatement());
+    }
 }
