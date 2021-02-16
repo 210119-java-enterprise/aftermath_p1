@@ -10,7 +10,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import static com.revature.utils.Conditions.EQUALS;
+import static com.revature.utils.Conditions.*;
 import static org.junit.Assert.*;
 
 public class MetaModelTest {
@@ -62,7 +62,8 @@ public class MetaModelTest {
 
         weightlifter.change("firstname", "lastname", "weight").set("tani","kaka", "94")
                 .where(EQUALS, "firstname","Tatiana")
-                .and(EQUALS, "country_id", "2");
+                .and(EQUALS, "country_id", "2")
+                .or(LTE, "height", "200");
 
         // asserting true since this doesn't really matter; we care about the structure of the insert statement
         // it's probably more efficient to use a regex, but let's print out the results for starters

@@ -359,6 +359,27 @@ public class MetaModel<T> {
         return this;
     }
 
+    public MetaModel<T> or() throws SQLException {
+        if (ps.toString().startsWith("insert"))
+        {
+            throw new BadMethodChainCallException("cannot call or() on add() methods");
+        }
+
+        if (!ps.toString().contains("where"))
+        {
+            throw new BadMethodChainCallException("cannot call or() if there is no where clause");
+        }
+
+        ps = conn.prepareStatement(ps.toString() + " or ");
+        return this;
+    }
+
+    public MetaModel<T> or(Conditions cond, String attr, String value) throws SQLException {
+        or();
+        builtWhereClause(cond, "", attr, value);
+        return this;
+    }
+
     public MetaModel<T> not(Conditions cond, String attr, String value) throws SQLException {
         builtWhereClause(cond, "not ", attr, value);
         return this;
@@ -383,6 +404,14 @@ public class MetaModel<T> {
                 break;
             case LT:
                 ps = conn.prepareStatement(psStr + attr + " < ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case GTE:
+                ps = conn.prepareStatement(psStr + attr + " >= ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case LTE:
+                ps = conn.prepareStatement(psStr + attr + " <= ?");
                 selectedField = getAttributeByColumnName(attr);
                 break;
         }
