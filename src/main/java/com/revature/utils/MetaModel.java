@@ -52,22 +52,7 @@ public class MetaModel<T> {
      * @return calling object to enable method chain calling
      */
     public MetaModel<T> grab() {
-        ps = null; // clear the prepared statement
-        appliedAttrs.clear();
-
-        try {
-            Table table = clas.getAnnotation(Table.class);
-            String tableName = table.tableName();
-            ps = conn.prepareStatement("select * from " + tableName);
-
-            for (AttrField attr : attrFields) {
-                appliedAttrs.add(attr);
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-
-        return this;
+        return grab(new String[] {});
     }
 
     /**
@@ -76,34 +61,25 @@ public class MetaModel<T> {
      * @return calling object to enable method chain calling
      */
     public MetaModel<T> grab(String attr) {
-        ps = null; // clear the prepared statement
-
-        try {
-            Table table = clas.getAnnotation(Table.class);
-            String tableName = table.tableName();
-            int psi = 1; // prepared statement index
-
-            if (attr.isEmpty()) {
-                ps = conn.prepareStatement("select * from ?");
-            } else {
-                ps = conn.prepareStatement("select ? from ?");
-                ps.setString(psi++, "*");
-            }
-
-            ps.setString(psi, tableName);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-
-        return this;
+        return grab(new String[] { attr });
     }
 
-    public MetaModel<T> grab(String[] attrs) {
+    public MetaModel<T> grab(String... attrs) {
         ps = null; // clear the prepared statement
         appliedAttrs.clear();
         try {
             Table table = clas.getAnnotation(Table.class);
             String tableName = table.tableName();
+
+            if (attrs.length == 0) {
+                ps = conn.prepareStatement("select * from " + tableName);
+
+                for (AttrField attr : attrFields) {
+                    appliedAttrs.add(attr);
+                }
+                return this;
+            }
+
             StringBuilder queryPlaceholders = new StringBuilder();
             String delimiter;
 
@@ -272,7 +248,13 @@ public class MetaModel<T> {
                     setterFKNameArr[0] = Character.toUpperCase(setterFKNameArr[0]);
                     FKName = String.valueOf(setterFKNameArr);
                     Method fkSetId = getMethodByFieldName("set" + FKName);
-                    fkSetId.invoke(model, rs.getInt(fk.getColumnName()));
+
+                    try {
+                        fkSetId.invoke(model, rs.getInt(fk.getColumnName()));
+                    } catch (SQLException e) {
+                        // do nothing; added try-catch block since ResultSet throws an exception if the params aren't
+                        // in the result set. Sometimes, we don't need to retrieve a FK
+                    }
                 }
 
                 for (AttrField selectedAttr: appliedAttrs) {

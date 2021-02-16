@@ -24,7 +24,10 @@ public class MetaModelTest {
         MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
         ArrayList<FKField> fks = weightlifter.getForeignKeys();
 
-        ArrayList<Weightlifter> warr = weightlifter.grab().runGrab();
+        ArrayList<Weightlifter> warr = weightlifter.grab("height", "lastname").runGrab();
+        warr.stream().forEach(System.out::println);
+
+        warr = weightlifter.grab().runGrab();
         warr.stream().forEach(System.out::println);
 
         assertTrue(true);
