@@ -1,4 +1,5 @@
 package unitTests;
+import com.revature.exceptions.BadMethodChainCallException;
 import com.revature.utils.ConnectionFactory;
 import com.revature.utils.FKField;
 import com.revature.utils.MetaModel;
@@ -11,8 +12,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class MetaModelTest {
     @Test
@@ -23,7 +23,6 @@ public class MetaModelTest {
         ConnectionFactory.addCredentials(props);
 
         MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
-        ArrayList<FKField> fks = weightlifter.getForeignKeys();
 
         ArrayList<Weightlifter> warr = weightlifter.grab("height", "lastname").runGrab();
         warr.stream().forEach(System.out::println);
@@ -69,5 +68,17 @@ public class MetaModelTest {
         String name2 = modelAnimal.getPreparedStatement();
 
         assertNotEquals(name1, name2);
+    }
+
+    @Test
+    public void metaModelShouldThrowExceptionIfAddValuesIsntCalledAfterAdd() throws Exception {
+        Properties props = new Properties();
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+        MetaModel<Weightlifter> modelAnimal = new MetaModel<>(Weightlifter.class);
+
+        assertThrows(Exception.class, () -> modelAnimal.add(
+                new String[] {"firstname", "lastname", "weight", "height", "country_id"})
+                .runAdd());
     }
 }

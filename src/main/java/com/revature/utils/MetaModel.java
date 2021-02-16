@@ -19,7 +19,6 @@ public class MetaModel<T> {
     private ArrayList<FKField> fkFields;
     private ArrayList<AttrField> attrFields;
     private ArrayList<AttrField> appliedAttrs; // contains the fields/attributes a user wants to select/insert/update/delete
-    private ArrayList<FKField> appliedFKs;
     private Method[] methods;
     private PreparedStatement ps;
     private Connection conn;
