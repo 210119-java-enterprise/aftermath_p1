@@ -1,7 +1,7 @@
 package com.revature.utils;
 import com.revature.annotations.*;
 import com.revature.exceptions.BadMethodChainCallException;
-import com.revature.exceptions.MismathedInsertArgumentsException;
+import com.revature.exceptions.MismatchedInsertArgumentsException;
 import com.sun.istack.internal.Nullable;
 import java.lang.String;
 
@@ -19,13 +19,14 @@ public class MetaModel<T> {
     private ArrayList<FKField> fkFields;
     private ArrayList<AttrField> attrFields;
     private ArrayList<AttrField> appliedAttrs; // contains the fields/attributes a user wants to select/insert/update/delete
+    private ArrayList<FKField> appliedFKs;
     private Method[] methods;
     private PreparedStatement ps;
     private Connection conn;
 
     public MetaModel(Class<T> clas) {
         this.clas = clas;
-        this.attrFields = new ArrayList<AttrField>();
+        this.attrFields = new ArrayList<>();
         getColumns();
         this.appliedAttrs = new ArrayList<>();
         this.methods = clas.getMethods();
@@ -102,7 +103,7 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> add(String[] attrs) {
+    public MetaModel<T> add(String... attrs) {
         ps = null;
         appliedAttrs.clear();
 
@@ -138,9 +139,9 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> addValues(String[] values) throws RuntimeException {
+    public MetaModel<T> addValues(String... values) throws RuntimeException {
         if (values.length != appliedAttrs.size()) {
-            throw new MismathedInsertArgumentsException();
+            throw new MismatchedInsertArgumentsException();
         }
 
         if (!ps.toString().startsWith("insert")) {
@@ -176,14 +177,6 @@ public class MetaModel<T> {
         }
 
         return this;
-    }
-
-    public String getClassName() {
-        return clas.getName();
-    }
-
-    public String getSimpleClassName() {
-        return clas.getSimpleName();
     }
 
     public PKField getPrimaryKey() {
@@ -223,57 +216,7 @@ public class MetaModel<T> {
         ArrayList<T> models = new ArrayList<>();
         try {
             ResultSet rs = ps.executeQuery();
-            T model;
-            PKField pkField = getPrimaryKey();
-
-            while (rs.next()) {
-                model = clas.newInstance();
-                char[] pkNameArr = pkField.getName().toCharArray();
-                pkNameArr[0] = Character.toUpperCase(pkNameArr[0]);
-                String pkName = String.valueOf(pkNameArr);
-                Method pkSetId = getMethodByFieldName("set" + pkName);
-
-                try {
-                    int pkk = rs.getInt(pkField.getColumnName());
-                    pkSetId.invoke(model, pkk);
-                } catch (SQLException e) {
-                    // do nothing; added try-catch block since ResultSet throws an exception if the params aren't
-                    // in the result set. Sometimes, we don't need to retrieve a PK
-                }
-
-                for (FKField fk: fkFields) {
-                    String FKName = fk.getName();
-                    char[] setterFKNameArr = FKName.toCharArray();
-
-                    setterFKNameArr[0] = Character.toUpperCase(setterFKNameArr[0]);
-                    FKName = String.valueOf(setterFKNameArr);
-                    Method fkSetId = getMethodByFieldName("set" + FKName);
-
-                    try {
-                        fkSetId.invoke(model, rs.getInt(fk.getColumnName()));
-                    } catch (SQLException e) {
-                        // do nothing; added try-catch block since ResultSet throws an exception if the params aren't
-                        // in the result set. Sometimes, we don't need to retrieve a FK
-                    }
-                }
-
-                for (AttrField selectedAttr: appliedAttrs) {
-                    Class<?> type = selectedAttr.getType();
-                    char[] getterAttrNameArr = selectedAttr.getName().toCharArray();
-                    getterAttrNameArr[0] = Character.toUpperCase(getterAttrNameArr[0]);
-                    String attrMethodName = "set" + String.valueOf(getterAttrNameArr);
-                    Method setAttr = getMethodByFieldName(attrMethodName);
-
-                    if (type == String.class) {
-                        setAttr.invoke(model, rs.getString(selectedAttr.getColumnName()));
-                    } else if (type == int.class) {
-                        setAttr.invoke(model, rs.getInt(selectedAttr.getColumnName()));
-                    } else if (type == double.class) {
-                        setAttr.invoke(model, rs.getDouble(selectedAttr.getColumnName()));
-                    }
-                }
-                models.add(model);
-            }
+            models = mapResultSet(rs);
         } catch (SQLException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             System.out.println(e.getMessage());
         }
@@ -281,59 +224,16 @@ public class MetaModel<T> {
         return models;
     }
 
-    public ArrayList<T> runAdd() throws Exception {
+    public int runAdd() throws Exception {
         if (!ps.toString().startsWith("insert")) {
             throw new BadMethodChainCallException("runAdd() can only be called from addValues()");
         }
 
         String psStr = ps.toString();
-        ArrayList<T> insertedRows = new ArrayList<>();
+        System.out.println(psStr);
         ps = conn.prepareStatement(psStr.substring(0, psStr.length() - 2));
 
-        int rowsInserted = ps.executeUpdate();
-
-        if (rowsInserted != 0) {
-            ResultSet rs = ps.getGeneratedKeys();
-            T model;
-            PKField pkField = getPrimaryKey();
-
-            while (rs.next()) {
-                model = clas.newInstance();
-                char[] pkNameArr = pkField.getName().toCharArray();
-                pkNameArr[0] = Character.toUpperCase(pkNameArr[0]);
-                String pkName = String.valueOf(pkNameArr);
-                Method pkSetId = getMethodByFieldName("set" + pkName);
-
-                try {
-                    int pkk = rs.getInt(pkField.getColumnName());
-                    pkSetId.invoke(model, pkk);
-                } catch (SQLException e) {
-                    // do nothing; added try-catch block since ResultSet throws an exception if the params aren't
-                    // in the result set. Sometimes, we don't need to retrieve a PK
-                }
-
-                for (AttrField selectedAttr: appliedAttrs) {
-                    Class<?> type = selectedAttr.getType();
-                    char[] getterAttrNameArr = selectedAttr.getName().toCharArray();
-                    getterAttrNameArr[0] = Character.toUpperCase(getterAttrNameArr[0]);
-                    String attrMethodName = "set" + String.valueOf(getterAttrNameArr);
-                    Method setAttr = getMethodByFieldName(attrMethodName);
-
-                    if (type == String.class) {
-                        setAttr.invoke(model, rs.getString(selectedAttr.getColumnName()));
-                    } else if (type == int.class) {
-                        setAttr.invoke(model, rs.getInt(selectedAttr.getColumnName()));
-                    } else if (type == double.class) {
-                        setAttr.invoke(model, rs.getDouble(selectedAttr.getColumnName()));
-                    }
-                }
-                insertedRows.add(model);
-            }
-
-            return insertedRows;
-        }
-
-        return null;
+        return ps.executeUpdate();
     }
 
     @Nullable
@@ -345,5 +245,65 @@ public class MetaModel<T> {
         }
 
         return null;
+    }
+
+    private ArrayList<T> mapResultSet(ResultSet rs) throws IllegalAccessException,
+                                                           InstantiationException,
+                                                           SQLException,
+                                                           InvocationTargetException {
+        T model;
+        PKField pkField = getPrimaryKey();
+        ArrayList<T> models = new ArrayList<>();
+
+        while (rs.next()) {
+            model = clas.newInstance();
+            char[] pkNameArr = pkField.getName().toCharArray();
+            pkNameArr[0] = Character.toUpperCase(pkNameArr[0]);
+            String pkName = String.valueOf(pkNameArr);
+            Method pkSetId = getMethodByFieldName("set" + pkName);
+
+            try {
+                int pkk = rs.getInt(pkField.getColumnName());
+                pkSetId.invoke(model, pkk);
+            } catch (SQLException | InvocationTargetException e) {
+                // do nothing; added try-catch block since ResultSet throws an exception if the params aren't
+                // in the result set. Sometimes, we don't need to retrieve a PK
+            }
+
+            for (FKField fk: fkFields) {
+                String FKName = fk.getName();
+                char[] setterFKNameArr = FKName.toCharArray();
+
+                setterFKNameArr[0] = Character.toUpperCase(setterFKNameArr[0]);
+                FKName = String.valueOf(setterFKNameArr);
+                Method fkSetId = getMethodByFieldName("set" + FKName);
+
+                try {
+                    fkSetId.invoke(model, rs.getInt(fk.getColumnName()));
+                } catch (SQLException | InvocationTargetException e) {
+                    // do nothing; added try-catch block since ResultSet throws an exception if the params aren't
+                    // in the result set. Sometimes, we don't need to retrieve a FK
+                }
+            }
+
+            for (AttrField selectedAttr: appliedAttrs) {
+                Class<?> type = selectedAttr.getType();
+                char[] getterAttrNameArr = selectedAttr.getName().toCharArray();
+                getterAttrNameArr[0] = Character.toUpperCase(getterAttrNameArr[0]);
+                String attrMethodName = "set" + String.valueOf(getterAttrNameArr);
+                Method setAttr = getMethodByFieldName(attrMethodName);
+
+                if (type == String.class) {
+                    setAttr.invoke(model, rs.getString(selectedAttr.getColumnName()));
+                } else if (type == int.class) {
+                    setAttr.invoke(model, rs.getInt(selectedAttr.getColumnName()));
+                } else if (type == double.class) {
+                    setAttr.invoke(model, rs.getDouble(selectedAttr.getColumnName()));
+                }
+            }
+            models.add(model);
+        }
+
+        return models;
     }
 }

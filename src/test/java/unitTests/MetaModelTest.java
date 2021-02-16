@@ -4,6 +4,7 @@ import com.revature.utils.FKField;
 import com.revature.utils.MetaModel;
 import org.junit.Test;
 import unitTests.mocks.Animal;
+import unitTests.mocks.Country;
 import unitTests.mocks.Weightlifter;
 
 import java.io.FileReader;
@@ -27,6 +28,8 @@ public class MetaModelTest {
         ArrayList<Weightlifter> warr = weightlifter.grab("height", "lastname").runGrab();
         warr.stream().forEach(System.out::println);
 
+        System.out.println("+========================================================================================+");
+
         warr = weightlifter.grab().runGrab();
         warr.stream().forEach(System.out::println);
 
@@ -38,12 +41,11 @@ public class MetaModelTest {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Animal> modelAnimal = new MetaModel<>(Animal.class);
+        MetaModel<Weightlifter> modelAnimal = new MetaModel<>(Weightlifter.class);
 
-        modelAnimal.add(new String[] {"weight", "weiner", "height", "teapot", "animalName"})
-                   .addValues(new String[] {"124", "200", "Elephant"})
-                   .addValues(new String[] {"12", "8", "Mouse"})
-                   .addValues(new String[] {"50", "86", "Dog"})
+        modelAnimal.add(new String[] {"firstname", "lastname", "weight", "height", "country_id"})
+                   .addValues(new String[] {"Jacques", "Demers", "75", "180", String.valueOf(Country.Canada.ordinal() + 1)})
+                   .addValues(new String[] {"Juan", "Martinez", "79", "184", String.valueOf(Country.Spain.ordinal() + 1)})
                    .runAdd();
 
         // asserting true since this doesn't really matter; we care about the structure of the insert statement

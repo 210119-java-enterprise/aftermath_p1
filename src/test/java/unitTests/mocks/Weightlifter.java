@@ -24,6 +24,7 @@ public class Weightlifter {
     @Attr(columnName = "height")
     private double height;
 
+    @Attr(columnName = "country_id")
     @FK(columnName = "country_id")
     private int countryId;
 
