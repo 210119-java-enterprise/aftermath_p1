@@ -290,18 +290,4 @@ public class MetaModel<T> {
 
         return null;
     }
-
-    private boolean contains(String attrStr) {
-        for (AttrField attr: attrFields) {
-            if (attr.getColumnName() == attrStr) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /*private ArrayList<T> mapResults(ResultSet rs) {
-        ArrayList<T> list = new ArrayList<>();
-    }*/
 }
