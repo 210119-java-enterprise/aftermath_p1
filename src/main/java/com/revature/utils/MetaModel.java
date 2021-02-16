@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.concurrent.locks.Condition;
 
 public class MetaModel<T> {
     private Class<T> clas;
@@ -45,6 +46,16 @@ public class MetaModel<T> {
         }
 
         return foreignKeyFields;
+    }
+
+    private AttrField getAttributeByColumnName(String name) {
+        for (AttrField attr : attrFields) {
+            if (attr.getColumnName().equals(name)) {
+                return attr;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -233,6 +244,146 @@ public class MetaModel<T> {
         ps = conn.prepareStatement(psStr.substring(0, psStr.length() - 2));
 
         return ps.executeUpdate();
+    }
+
+    public MetaModel<T> where() throws SQLException {
+        if (ps.toString().startsWith("insert"))
+        {
+            throw new BadMethodChainCallException("where() can't be called off of add() since insert statements can't have where clauses");
+        }
+
+        if (ps.toString().contains("where")) {
+            throw new BadMethodChainCallException("where() can only be called once in a method chain call." +
+                    " Use and(), or(), or not()");
+        }
+
+        ps = conn.prepareStatement(ps.toString() + " where ");
+        return this;
+    }
+
+    public MetaModel<T> where(Conditions cond, String attr, String value) throws SQLException {
+        where();
+        AttrField selectedField = null;
+
+        String psStr = ps.toString();
+        switch (cond) {
+            case EQUALS:
+                ps = conn.prepareStatement(psStr + attr + " = ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case NOT_EQUALS:
+                ps = conn.prepareStatement(psStr + attr + " <> ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case GT:
+                ps = conn.prepareStatement(psStr + attr + " > ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case LT:
+                ps = conn.prepareStatement(psStr + attr + " < ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+        }
+
+        Class<?> type = selectedField.getType();
+
+        if (type == String.class) {
+            ps.setString(1, value);
+        } else if (type == int.class) {
+            ps.setInt(1, Integer.parseInt(value));
+        } else if (type == double.class) {
+            ps.setDouble(1, Double.parseDouble(value));
+        }
+
+        return this;
+    }
+
+    public MetaModel<T> and() throws SQLException {
+        if (ps.toString().startsWith("insert"))
+        {
+            throw new BadMethodChainCallException("cannot call and() on add() methods");
+        }
+
+        if (!ps.toString().contains("where"))
+        {
+            throw new BadMethodChainCallException("cannot call and() if there is no where clause");
+        }
+
+        ps = conn.prepareStatement(ps.toString() + " and ");
+        return this;
+    }
+
+    public MetaModel<T> and(Conditions cond, String attr, String value) throws SQLException {
+        and();
+        AttrField selectedField = null;
+
+        String psStr = ps.toString();
+        switch (cond) {
+            case EQUALS:
+                ps = conn.prepareStatement(psStr + attr + " = ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case NOT_EQUALS:
+                ps = conn.prepareStatement(psStr + attr + " <> ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case GT:
+                ps = conn.prepareStatement(psStr + attr + " > ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case LT:
+                ps = conn.prepareStatement(psStr + attr + " < ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+        }
+
+        Class<?> type = selectedField.getType();
+
+        if (type == String.class) {
+            ps.setString(1, value);
+        } else if (type == int.class) {
+            ps.setInt(1, Integer.parseInt(value));
+        } else if (type == double.class) {
+            ps.setDouble(1, Double.parseDouble(value));
+        }
+
+        return this;
+    }
+
+    public MetaModel<T> not(Conditions cond, String attr, String value) throws SQLException {
+        AttrField selectedField = null;
+
+        String psStr = ps.toString() + "not ";
+        switch (cond) {
+            case EQUALS:
+                ps = conn.prepareStatement(psStr + attr + " = ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case NOT_EQUALS:
+                ps = conn.prepareStatement(psStr + attr + " <> ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case GT:
+                ps = conn.prepareStatement(psStr + attr + " > ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case LT:
+                ps = conn.prepareStatement(psStr + attr + " < ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+        }
+
+        Class<?> type = selectedField.getType();
+
+        if (type == String.class) {
+            ps.setString(1, value);
+        } else if (type == int.class) {
+            ps.setInt(1, Integer.parseInt(value));
+        } else if (type == double.class) {
+            ps.setDouble(1, Double.parseDouble(value));
+        }
+
+        return this;
     }
 
     @Nullable

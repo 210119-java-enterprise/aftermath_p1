@@ -1,5 +1,6 @@
 package unitTests;
 import com.revature.exceptions.BadMethodChainCallException;
+import com.revature.utils.Conditions;
 import com.revature.utils.ConnectionFactory;
 import com.revature.utils.FKField;
 import com.revature.utils.MetaModel;
@@ -12,6 +13,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import static com.revature.utils.Conditions.EQUALS;
 import static org.junit.Assert.*;
 
 public class MetaModelTest {
@@ -80,5 +82,22 @@ public class MetaModelTest {
         assertThrows(Exception.class, () -> modelAnimal.add(
                 new String[] {"firstname", "lastname", "weight", "height", "country_id"})
                 .runAdd());
+    }
+
+    @Test
+    public void metaModelShouldBuiltAValidWhereClause() throws Exception {
+        Properties props = new Properties();
+
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+
+        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+
+        weightlifter.grab()
+                .where(EQUALS, "country_id", "2")
+                .and()
+                .not(EQUALS, "firstname", "Tatiana");
+        System.out.println(weightlifter.getPreparedStatement());
+        assertTrue(true);
     }
 }
