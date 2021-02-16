@@ -1,6 +1,9 @@
 package com.revature.utils;
 import com.revature.annotations.*;
+import com.revature.exceptions.BadMethodChainCallException;
+import com.revature.exceptions.MismathedInsertArgumentsException;
 import com.sun.istack.internal.Nullable;
+import java.lang.String;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -146,6 +149,46 @@ public class MetaModel<T> {
 
             ps = conn.prepareStatement("insert into " + tableName
                     + " (" + queryPlaceholders.toString() + ") values ");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return this;
+    }
+
+    public MetaModel<T> addValues(String[] values) throws RuntimeException {
+        if (values.length != appliedAttrs.size()) {
+            throw new MismathedInsertArgumentsException();
+        }
+
+        if (!ps.toString().startsWith("insert")) {
+            throw new BadMethodChainCallException("addValues() needs to be called off of either an add() method"
+            + " or another addValues() method.");
+        }
+
+        StringBuilder rowInsertPlaceholder = new StringBuilder();
+        String delimiter;
+
+        for (int i=0; i<values.length; i++) {
+            delimiter = (i < values.length - 1) ? ", " : "";
+            rowInsertPlaceholder.append("?" + delimiter);
+        }
+
+        try {
+            String psStr = ps.toString();
+            ps = conn.prepareStatement(psStr + "(" + rowInsertPlaceholder.toString() + "), ");
+
+            for (int i=0; i<appliedAttrs.size(); i++) {
+                Class<?> type = appliedAttrs.get(i).getType();
+
+                if (type == String.class) {
+                    ps.setString(i+1, values[i]);
+                } else if (type == int.class) {
+                    ps.setInt(i+1, Integer.parseInt(values[i]));
+                } else if (type == double.class) {
+                    ps.setDouble(i+1, Double.parseDouble(values[i]));
+                }
+            }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
