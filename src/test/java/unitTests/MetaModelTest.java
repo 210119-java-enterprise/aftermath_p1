@@ -45,8 +45,6 @@ public class MetaModelTest {
                    .addValues(new String[] {"Vlad", "Chad", "134", "200", String.valueOf(Country.Russia.ordinal() + 1)})
                    .runAdd();
 
-        // asserting true since this doesn't really matter; we care about the structure of the insert statement
-        // it's probably more efficient to use a regex, but let's print out the results for starters
         assertNotEquals(0, rowsAffected);
 
         System.out.println(modelAnimal.getPreparedStatement());
