@@ -23,7 +23,7 @@ public class MetaModelTest {
 
         MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
 
-        ArrayList<Weightlifter> warr = weightlifter.grab("height").runGrab();
+        ArrayList<Weightlifter> warr = weightlifter.grab("country_id").runGrab();
         warr.stream().forEach(System.out::println);
 
         System.out.println("+========================================================================================+");
@@ -41,14 +41,13 @@ public class MetaModelTest {
         ConnectionFactory.addCredentials(props);
         MetaModel<Weightlifter> modelAnimal = new MetaModel<>(Weightlifter.class);
 
-        modelAnimal.add(new String[] {"firstname", "lastname", "weight", "height", "country_id"})
-                   .addValues(new String[] {"Jacques", "Demers", "75", "180", String.valueOf(Country.Canada.ordinal() + 1)})
-                   .addValues(new String[] {"Juan", "Martinez", "79", "184", String.valueOf(Country.Spain.ordinal() + 1)})
+        int rowsAffected = modelAnimal.add(new String[] {"firstname", "lastname", "weight", "height", "country_id"})
+                   .addValues(new String[] {"Vlad", "Chad", "134", "200", String.valueOf(Country.Russia.ordinal() + 1)})
                    .runAdd();
 
         // asserting true since this doesn't really matter; we care about the structure of the insert statement
         // it's probably more efficient to use a regex, but let's print out the results for starters
-        assertTrue(true);
+        assertNotEquals(0, rowsAffected);
 
         System.out.println(modelAnimal.getPreparedStatement());
     }
@@ -60,14 +59,12 @@ public class MetaModelTest {
         ConnectionFactory.addCredentials(props);
         MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
 
-        weightlifter.change("firstname", "lastname", "weight").set("tani","kaka", "94")
-                .where(EQUALS, "firstname","Tatiana")
-                .and(EQUALS, "country_id", "2")
-                .or(LTE, "height", "200");
+        int rowsAffected = weightlifter.change("lastname", "firstname").set("Putinn", "Vladimirr")
+                .where(EQUALS, "firstname","Vladimir").runChange();
 
         // asserting true since this doesn't really matter; we care about the structure of the insert statement
         // it's probably more efficient to use a regex, but let's print out the results for starters
-        assertTrue(true);
+        assertNotEquals(0, rowsAffected);
 
         System.out.println(weightlifter.getPreparedStatement());
     }
@@ -192,14 +189,12 @@ public class MetaModelTest {
         ConnectionFactory.addCredentials(props);
         MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
 
-        weightlifter.remove()
-                .where(EQUALS, "firstname","Tatiana")
-                .and(EQUALS, "country_id", "2")
-                .or(LTE, "height", "200");
+        int rowsAffected = weightlifter.remove()
+                .where(EQUALS, "weightlifter_id","6").runRemove();
 
         // asserting true since this doesn't really matter; we care about the structure of the insert statement
         // it's probably more efficient to use a regex, but let's print out the results for starters
-        assertTrue(true);
+        assertNotEquals(0, rowsAffected);
 
         System.out.println(weightlifter.getPreparedStatement());
     }

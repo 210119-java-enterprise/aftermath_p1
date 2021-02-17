@@ -1,10 +1,7 @@
 package com.revature.utils;
 import com.revature.annotations.*;
-import com.revature.exceptions.BadMethodChainCallException;
-import com.revature.exceptions.InvalidInputException;
-import com.revature.exceptions.MismatchedInsertArgumentsException;
+import com.revature.exceptions.*;
 import com.sun.istack.internal.Nullable;
-import javafx.scene.control.Tab;
 
 import java.lang.String;
 
@@ -16,7 +13,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.concurrent.locks.Condition;
 
 public class MetaModel<T> {
     private Class<T> clas;
@@ -61,14 +57,6 @@ public class MetaModel<T> {
         }
 
         return null;
-    }
-
-    /**
-     * Corresponds to a select SQL statement. The 0-parameter overloaded method is equivalent to a select * from <table> statement
-     * @return calling object to enable method chain calling
-     */
-    public MetaModel<T> grab() {
-        return grab(new String[] {});
     }
 
     /**
@@ -203,6 +191,7 @@ public class MetaModel<T> {
         String tableName = table.tableName();
         appliedAttrs.clear();
         int count = 0;
+
         for (String attr : attrs) {
             AttrField currentField = getAttributeByColumnName(attr);
 
@@ -296,6 +285,10 @@ public class MetaModel<T> {
     }
 
     public ArrayList<T> runGrab() {
+        if (!ps.toString().startsWith("select")) {
+            throw new BadMethodChainCallException("runGrab() can only be called when grab() is the head of the method chain.");
+        }
+
         ArrayList<T> models = new ArrayList<>();
         try {
             ResultSet rs = ps.executeQuery();
@@ -315,6 +308,22 @@ public class MetaModel<T> {
         String psStr = ps.toString();
         System.out.println(psStr);
         ps = conn.prepareStatement(psStr.substring(0, psStr.length() - 2));
+
+        return ps.executeUpdate();
+    }
+
+    public int runChange() throws Exception {
+        if (!ps.toString().startsWith("update")) {
+            throw new BadMethodChainCallException("runChange() can only be called from set()");
+        }
+
+        return ps.executeUpdate();
+    }
+
+    public int runRemove() throws Exception {
+        if (!ps.toString().startsWith("delete")) {
+            throw new BadMethodChainCallException("runRemove() can only be called when remove() is the head of the method chain.");
+        }
 
         return ps.executeUpdate();
     }

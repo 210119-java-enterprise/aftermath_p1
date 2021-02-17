@@ -10,6 +10,7 @@ import java.util.Objects;
 @Table(tableName = "weightlifters")
 public class Weightlifter {
     @PK(columnName = "weightlifter_id")
+    @Attr(columnName = "weightlifter_id")
     private int id;
 
     @Attr(columnName = "firstname")
