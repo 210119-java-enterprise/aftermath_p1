@@ -1,5 +1,5 @@
 package unitTests.mocks;
 
 public enum Country {
-    USA, Russia, Canada, Spain
+    USA, Russia, Canada, Spain, Georgia
 }

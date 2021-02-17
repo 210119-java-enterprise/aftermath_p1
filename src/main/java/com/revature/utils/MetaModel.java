@@ -6,17 +6,16 @@ import java.lang.String;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MetaModel<T> {
     private Class<T> clas;
     private ArrayList<FKField> fkFields;
     private ArrayList<AttrField> attrFields;
     private ArrayList<AttrField> appliedAttrs; // contains the fields/attributes a user wants to select/insert/update/delete
+    private HashMap<String, Savepoint> savepoints;
     private ArrayList<Integer> filteredUpdateAttrIndices;
     private Method[] methods;
     private PreparedStatement ps;
@@ -31,6 +30,44 @@ public class MetaModel<T> {
         this.fkFields = getForeignKeys();
         this.conn = ConnectionFactory.getInstance().getConnection();
         filteredUpdateAttrIndices = new ArrayList<>();
+        savepoints = new HashMap<>();
+    }
+
+    public void turnOffAutoCommit() throws SQLException {
+        conn.setAutoCommit(false);
+    }
+
+    public void turnOnAutoCommit() throws SQLException {
+        conn.setAutoCommit(true);
+    }
+
+    public void runCommit() throws SQLException {
+        conn.commit();
+    }
+
+    public void addSavepoint(String name) throws SQLException {
+        if (name == null || name.isEmpty()) {
+            throw new InvalidInputException("Savepoint needs an associated name");
+        }
+
+        savepoints.put(name, conn.setSavepoint());
+    }
+
+    public void removeSavepoint(String name) {
+        if (name == null || name.isEmpty()) {
+            throw new InvalidInputException("Key is not value");
+        }
+
+        savepoints.remove(name);
+    }
+
+    public void rollback(String name) throws SQLException {
+        if (name == null || name.isEmpty()) {
+            throw new InvalidInputException("Key is not value");
+        }
+
+        Savepoint selectedSavepoint = savepoints.get(name);
+        conn.rollback(selectedSavepoint);
     }
 
     /**
@@ -483,8 +520,8 @@ public class MetaModel<T> {
                 Class<?> type = selectedAttr.getType();
                 char[] getterAttrNameArr = selectedAttr.getName().toCharArray();
                 getterAttrNameArr[0] = Character.toUpperCase(getterAttrNameArr[0]);
-                String attrMethodName = "set" + String.valueOf(getterAttrNameArr);
-                Method setAttr = getMethodByFieldName(attrMethodName);
+                String attrMethodName = String.valueOf(getterAttrNameArr);
+                Method setAttr = getMethodByFieldName("set" + attrMethodName);
 
                 if (type == String.class) {
                     setAttr.invoke(model, rs.getString(selectedAttr.getColumnName()));
