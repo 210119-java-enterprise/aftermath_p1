@@ -2,9 +2,7 @@ package com.revature.utils;
 import com.revature.annotations.*;
 import com.revature.exceptions.*;
 import com.sun.istack.internal.Nullable;
-
 import java.lang.String;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -35,30 +33,6 @@ public class MetaModel<T> {
         filteredUpdateAttrIndices = new ArrayList<>();
     }
 
-    public ArrayList<FKField> getForeignKeys() {
-
-        ArrayList<FKField> foreignKeyFields = new ArrayList<>();
-        Field[] fields = clas.getDeclaredFields();
-        for (Field field : fields) {
-            FK attr = field.getAnnotation(FK.class);
-            if (attr != null) {
-                foreignKeyFields.add(new FKField(field));
-            }
-        }
-
-        return foreignKeyFields;
-    }
-
-    private AttrField getAttributeByColumnName(String name) {
-        for (AttrField attr : attrFields) {
-            if (attr.getColumnName().equals(name)) {
-                return attr;
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Corresponds to a select SQL statement
      * @param attrs String that contains one attribute/table column
@@ -68,16 +42,14 @@ public class MetaModel<T> {
     public MetaModel<T> grab(String... attrs) {
         ps = null; // clear the prepared statement
         appliedAttrs.clear();
+
         try {
             Table table = clas.getAnnotation(Table.class);
             String tableName = table.tableName();
 
             if (attrs.length == 0) {
                 ps = conn.prepareStatement("select * from " + tableName);
-
-                for (AttrField attr : attrFields) {
-                    appliedAttrs.add(attr);
-                }
+                attrFields.stream().forEach(attr -> appliedAttrs.add(attr));
                 return this;
             }
 
@@ -86,12 +58,12 @@ public class MetaModel<T> {
 
             for (int i=0; i<attrs.length; i++) {
                 delimiter = (i < attrs.length - 1) ? ", " : "";
-                for (AttrField attr : attrFields) {
-                    if (attr.getColumnName().equals(attrs[i])) {
-                        queryPlaceholders.append(attrs[i] + delimiter);
-                        appliedAttrs.add(attr);
-                        break;
-                    }
+
+                AttrField currentAttr = getAttributeByColumnName(attrs[i]);
+
+                if (currentAttr != null) {
+                    queryPlaceholders.append(attrs[i] + delimiter);
+                    appliedAttrs.add(currentAttr);
                 }
             }
 
@@ -114,19 +86,14 @@ public class MetaModel<T> {
             String tableName = table.tableName();
             String delimiter;
 
-            for (int i=0; i<attrs.length; i++) {
-                for (AttrField attr : attrFields) {
-                    if (attr.getColumnName().equals(attrs[i])) {
-                        attrFilter.add(attrs[i]);
-                        appliedAttrs.add(attr);
-                        break;
-                    }
-                }
+            for (String attrStr: attrs) {
+                attrFields.stream()
+                        .filter(attr -> attr.getColumnName().equals(attrStr))
+                        .forEach(attr -> { attrFilter.add(attrStr); appliedAttrs.add(attr); });
             }
 
             for (int i=0; i<attrFilter.size(); i++) {
                 delimiter = (i < attrFilter.size() - 1) ? ", " : "";
-
                 queryPlaceholders.append(attrFilter.get(i) + delimiter);
             }
 
@@ -146,7 +113,7 @@ public class MetaModel<T> {
 
         if (!ps.toString().startsWith("insert")) {
             throw new BadMethodChainCallException("addValues() needs to be called off of either an add() method"
-            + " or another addValues() method.");
+                    + " or another addValues() method.");
         }
 
         StringBuilder rowInsertPlaceholder = new StringBuilder();
@@ -204,13 +171,9 @@ public class MetaModel<T> {
         }
 
         StringBuilder setString = new StringBuilder("update " + tableName + " set ");
-
-        for (AttrField attr : appliedAttrs) {
-            setString.append(attr.getColumnName());
-            setString.append(" = ?, ");
-        }
-
+        appliedAttrs.stream().forEach(attr -> { setString.append(attr.getColumnName()); setString.append(" = ?, "); });
         ps = conn.prepareStatement(setString.toString().substring(0, setString.length()-2));
+
         return this;
     }
 
@@ -249,6 +212,149 @@ public class MetaModel<T> {
         }
 
         return this;
+    }
+
+    public MetaModel<T> remove() throws SQLException {
+        appliedAttrs.clear();
+        ps = null;
+        Table table = clas.getAnnotation(Table.class);
+        String tableName = table.tableName();
+        ps = conn.prepareStatement("delete from " + tableName);
+        return this;
+    }
+
+    public MetaModel<T> where() throws SQLException {
+        if (ps.toString().startsWith("insert"))
+        {
+            throw new BadMethodChainCallException("where() can't be called off of add() since insert statements can't have where clauses");
+        }
+
+        if (ps.toString().contains("where")) {
+            throw new BadMethodChainCallException("where() can only be called once in a method chain call." +
+                    " Use and(), or(), or not()");
+        }
+
+        ps = conn.prepareStatement(ps.toString() + " where ");
+        return this;
+    }
+
+    public MetaModel<T> where(Conditions cond, String attr, String value) throws SQLException {
+        where();
+        builtWhereClause(cond, "", attr, value);
+        return this;
+    }
+
+    public MetaModel<T> and() throws SQLException {
+        if (ps.toString().startsWith("insert"))
+        {
+            throw new BadMethodChainCallException("cannot call and() on add() methods");
+        }
+
+        if (!ps.toString().contains("where"))
+        {
+            throw new BadMethodChainCallException("cannot call and() if there is no where clause");
+        }
+
+        ps = conn.prepareStatement(ps.toString() + " and ");
+        return this;
+    }
+
+    public MetaModel<T> and(Conditions cond, String attr, String value) throws SQLException {
+        and();
+        builtWhereClause(cond, "", attr, value);
+        return this;
+    }
+
+    public MetaModel<T> or() throws SQLException {
+        if (ps.toString().startsWith("insert"))
+        {
+            throw new BadMethodChainCallException("cannot call or() on add() methods");
+        }
+
+        if (!ps.toString().contains("where"))
+        {
+            throw new BadMethodChainCallException("cannot call or() if there is no where clause");
+        }
+
+        ps = conn.prepareStatement(ps.toString() + " or ");
+        return this;
+    }
+
+    public MetaModel<T> or(Conditions cond, String attr, String value) throws SQLException {
+        or();
+        builtWhereClause(cond, "", attr, value);
+        return this;
+    }
+
+    public MetaModel<T> not(Conditions cond, String attr, String value) throws SQLException {
+        builtWhereClause(cond, "not ", attr, value);
+        return this;
+    }
+
+    private void builtWhereClause(Conditions cond, String logicalOp, String attr, String value) throws SQLException {
+        AttrField selectedField = null;
+
+        String psStr = ps.toString() + logicalOp;
+        switch (cond) {
+            case EQUALS:
+                ps = conn.prepareStatement(psStr + attr + " = ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case NOT_EQUALS:
+                ps = conn.prepareStatement(psStr + attr + " <> ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case GT:
+                ps = conn.prepareStatement(psStr + attr + " > ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case LT:
+                ps = conn.prepareStatement(psStr + attr + " < ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case GTE:
+                ps = conn.prepareStatement(psStr + attr + " >= ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+            case LTE:
+                ps = conn.prepareStatement(psStr + attr + " <= ?");
+                selectedField = getAttributeByColumnName(attr);
+                break;
+        }
+
+        Class<?> type = selectedField.getType();
+
+        if (type == String.class) {
+            ps.setString(1, value);
+        } else if (type == int.class) {
+            ps.setInt(1, Integer.parseInt(value));
+        } else if (type == double.class) {
+            ps.setDouble(1, Double.parseDouble(value));
+        }
+    }
+
+    public ArrayList<FKField> getForeignKeys() {
+
+        ArrayList<FKField> foreignKeyFields = new ArrayList<>();
+        Field[] fields = clas.getDeclaredFields();
+        for (Field field : fields) {
+            FK attr = field.getAnnotation(FK.class);
+            if (attr != null) {
+                foreignKeyFields.add(new FKField(field));
+            }
+        }
+
+        return foreignKeyFields;
+    }
+
+    private AttrField getAttributeByColumnName(String name) {
+        for (AttrField attr : attrFields) {
+            if (attr.getColumnName().equals(name)) {
+                return attr;
+            }
+        }
+
+        return null;
     }
 
     public PKField getPrimaryKey() {
@@ -328,125 +434,6 @@ public class MetaModel<T> {
         return ps.executeUpdate();
     }
 
-    public MetaModel<T> where() throws SQLException {
-        if (ps.toString().startsWith("insert"))
-        {
-            throw new BadMethodChainCallException("where() can't be called off of add() since insert statements can't have where clauses");
-        }
-
-        if (ps.toString().contains("where")) {
-            throw new BadMethodChainCallException("where() can only be called once in a method chain call." +
-                    " Use and(), or(), or not()");
-        }
-
-        ps = conn.prepareStatement(ps.toString() + " where ");
-        return this;
-    }
-
-    public MetaModel<T> where(Conditions cond, String attr, String value) throws SQLException {
-        where();
-        builtWhereClause(cond, "", attr, value);
-        return this;
-    }
-
-    public MetaModel<T> and() throws SQLException {
-        if (ps.toString().startsWith("insert"))
-        {
-            throw new BadMethodChainCallException("cannot call and() on add() methods");
-        }
-
-        if (!ps.toString().contains("where"))
-        {
-            throw new BadMethodChainCallException("cannot call and() if there is no where clause");
-        }
-
-        ps = conn.prepareStatement(ps.toString() + " and ");
-        return this;
-    }
-
-    public MetaModel<T> and(Conditions cond, String attr, String value) throws SQLException {
-        and();
-        builtWhereClause(cond, "", attr, value);
-        return this;
-    }
-
-    public MetaModel<T> or() throws SQLException {
-        if (ps.toString().startsWith("insert"))
-        {
-            throw new BadMethodChainCallException("cannot call or() on add() methods");
-        }
-
-        if (!ps.toString().contains("where"))
-        {
-            throw new BadMethodChainCallException("cannot call or() if there is no where clause");
-        }
-
-        ps = conn.prepareStatement(ps.toString() + " or ");
-        return this;
-    }
-
-    public MetaModel<T> or(Conditions cond, String attr, String value) throws SQLException {
-        or();
-        builtWhereClause(cond, "", attr, value);
-        return this;
-    }
-
-    public MetaModel<T> not(Conditions cond, String attr, String value) throws SQLException {
-        builtWhereClause(cond, "not ", attr, value);
-        return this;
-    }
-
-    public MetaModel<T> remove() throws SQLException {
-        appliedAttrs.clear();
-        ps = null;
-        Table table = clas.getAnnotation(Table.class);
-        String tableName = table.tableName();
-        ps = conn.prepareStatement("delete from " + tableName);
-        return this;
-    }
-
-    private void builtWhereClause(Conditions cond, String logicalOp, String attr, String value) throws SQLException {
-        AttrField selectedField = null;
-
-        String psStr = ps.toString() + logicalOp;
-        switch (cond) {
-            case EQUALS:
-                ps = conn.prepareStatement(psStr + attr + " = ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case NOT_EQUALS:
-                ps = conn.prepareStatement(psStr + attr + " <> ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case GT:
-                ps = conn.prepareStatement(psStr + attr + " > ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case LT:
-                ps = conn.prepareStatement(psStr + attr + " < ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case GTE:
-                ps = conn.prepareStatement(psStr + attr + " >= ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-            case LTE:
-                ps = conn.prepareStatement(psStr + attr + " <= ?");
-                selectedField = getAttributeByColumnName(attr);
-                break;
-        }
-
-        Class<?> type = selectedField.getType();
-
-        if (type == String.class) {
-            ps.setString(1, value);
-        } else if (type == int.class) {
-            ps.setInt(1, Integer.parseInt(value));
-        } else if (type == double.class) {
-            ps.setDouble(1, Double.parseDouble(value));
-        }
-    }
-
     @Nullable
     private Method getMethodByFieldName(String fieldName) {
         for (Method currentMethod : methods) {
@@ -458,10 +445,8 @@ public class MetaModel<T> {
         return null;
     }
 
-    private ArrayList<T> mapResultSet(ResultSet rs) throws IllegalAccessException,
-                                                           InstantiationException,
-                                                           SQLException,
-                                                           InvocationTargetException {
+    private ArrayList<T> mapResultSet(ResultSet rs) throws SQLException, IllegalAccessException,
+                                                           InstantiationException, InvocationTargetException {
         T model;
         PKField pkField = getPrimaryKey();
         ArrayList<T> models = new ArrayList<>();
@@ -476,10 +461,7 @@ public class MetaModel<T> {
             try {
                 int pkk = rs.getInt(pkField.getColumnName());
                 pkSetId.invoke(model, pkk);
-            } catch (SQLException | InvocationTargetException e) {
-                // do nothing; added try-catch block since ResultSet throws an exception if the params aren't
-                // in the result set. Sometimes, we don't need to retrieve a PK
-            }
+            } catch (SQLException | InvocationTargetException e) {/* do nothing */}
 
             for (FKField fk: fkFields) {
                 String FKName = fk.getName();

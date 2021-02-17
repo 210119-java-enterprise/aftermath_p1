@@ -41,11 +41,11 @@ public class MetaModelTest {
         ConnectionFactory.addCredentials(props);
         MetaModel<Weightlifter> modelAnimal = new MetaModel<>(Weightlifter.class);
 
-        int rowsAffected = modelAnimal.add(new String[] {"firstname", "lastname", "weight", "height", "country_id"})
-                   .addValues(new String[] {"Vlad", "Chad", "134", "200", String.valueOf(Country.Russia.ordinal() + 1)})
-                   .runAdd();
+        modelAnimal.add(new String[] {"firstname", "lastname", "weight", "height", "country_id"})
+                   .addValues(new String[] {"Vlad", "Chad", "134", "200", String.valueOf(Country.Russia.ordinal() + 1)});
+                   //.runAdd();
 
-        assertNotEquals(0, rowsAffected);
+        //assertNotEquals(0, rowsAffected);
 
         System.out.println(modelAnimal.getPreparedStatement());
     }
@@ -57,12 +57,12 @@ public class MetaModelTest {
         ConnectionFactory.addCredentials(props);
         MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
 
-        int rowsAffected = weightlifter.change("lastname", "firstname").set("Putinn", "Vladimirr")
-                .where(EQUALS, "firstname","Vladimir").runChange();
+        weightlifter.change("lastname", "firstname", "weight").set("Putinn", "Vladimirr", "144")
+                .where(EQUALS, "firstname","Vladimir");//.runChange();
 
         // asserting true since this doesn't really matter; we care about the structure of the insert statement
         // it's probably more efficient to use a regex, but let's print out the results for starters
-        assertNotEquals(0, rowsAffected);
+        //assertNotEquals(0, rowsAffected);
 
         System.out.println(weightlifter.getPreparedStatement());
     }
