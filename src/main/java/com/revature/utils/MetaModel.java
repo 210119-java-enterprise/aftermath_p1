@@ -15,7 +15,7 @@ public class MetaModel<T> {
     private ArrayList<FKField> fkFields;
     private ArrayList<AttrField> attrFields;
     private ArrayList<AttrField> appliedAttrs; // contains the fields/attributes a user wants to select/insert/update/delete
-    private HashMap<String, Savepoint> savepoints;
+    private HashMap<String, Savepoint> savepoints; // Hashmap of savepoints
     private ArrayList<Integer> filteredUpdateAttrIndices;
     private Method[] methods;
     private PreparedStatement ps;
