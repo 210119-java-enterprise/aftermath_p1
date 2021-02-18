@@ -291,4 +291,32 @@ public class MetaModelTest {
 
         System.out.println(weightlifters.getPreparedStatement());
     }
+
+    @Test
+    public void metaModelShouldUndoTransactionsAfterRollback() throws Exception {
+        Properties props = new Properties();
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+        MetaModel<Weightlifter> weightlifters = new MetaModel<>(Weightlifter.class);
+
+        weightlifters.turnOffAutoCommit();
+        weightlifters.addSavepoint("insert spanish lifters");
+
+        int rowsAffected = weightlifters.add("firstname", "lastname", "weight", "height", "country_id")
+                .addValues("Jwaosé", "Ieebáñeze", "169", "198", String.valueOf(Country.Spain.ordinal() + 1))
+                .addValues("Paul", "Lopez", "169", "198", String.valueOf(Country.Spain.ordinal() + 1))
+                .runAdd();
+
+        assertNotEquals(0, rowsAffected);
+
+        weightlifters.rollback("insert spanish lifters");
+
+        weightlifters.add("firstname", "lastname", "weight", "height", "country_id")
+                .addValues("Dmitry", "Klokov", "105", "183", String.valueOf(Country.Russia.ordinal() + 1))
+                .runAdd();
+
+        weightlifters.runCommit();
+
+        System.out.println(weightlifters.getPreparedStatement());
+    }
 }

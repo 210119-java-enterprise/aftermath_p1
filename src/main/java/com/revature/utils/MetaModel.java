@@ -63,7 +63,7 @@ public class MetaModel<T> {
 
     public void rollback(String name) throws SQLException {
         if (name == null || name.isEmpty()) {
-            throw new InvalidInputException("Key is not value");
+            throw new InvalidInputException("Key is not a value");
         }
 
         Savepoint selectedSavepoint = savepoints.get(name);
