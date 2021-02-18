@@ -1,6 +1,6 @@
 package unitTests;
 import com.revature.utils.ConnectionFactory;
-import com.revature.utils.MetaModel;
+import com.revature.utils.CrudModel;
 import org.junit.Test;
 import unitTests.mocks.Animal;
 import unitTests.mocks.Country;
@@ -13,15 +13,15 @@ import java.util.Properties;
 import static com.revature.utils.Conditions.*;
 import static org.junit.Assert.*;
 
-public class MetaModelTest {
+public class CrudModelTest {
     @Test
-    public void metaModelShouldGrabAllFieldsInSelect() throws Exception {
+    public void crudModelShouldGrabAllFieldsInSelect() throws Exception {
         Properties props = new Properties();
 
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
 
-        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
         ArrayList<Weightlifter> warr = weightlifter.grab("country_id", "height", "weight").runGrab();
         warr.stream().forEach(System.out::println);
@@ -35,11 +35,11 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldBuiltAValidInsertStatement() throws Exception {
+    public void crudModelShouldBuiltAValidInsertStatement() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> modelAnimal = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> modelAnimal = new CrudModel<>(Weightlifter.class);
 
         int rowsAffected = modelAnimal.add(new String[] {"firstname", "lastname", "weight", "height", "country_id"})
                    .addValues(new String[] {"Vlad", "Chad", "134", "200", String.valueOf(Country.Russia.ordinal() + 1)})
@@ -51,11 +51,11 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldBuiltAValidUpdateStatement() throws Exception {
+    public void crudModelShouldBuiltAValidUpdateStatement() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
         weightlifter.change("lastname", "firstname", "weight").set("Putinn", "Vladimirr", "144")
                 .where(EQUALS, "firstname","Vladimir")
@@ -69,11 +69,11 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldThrowAnExceptionIfSetIsCalledTwice() throws Exception {
+    public void crudModelShouldThrowAnExceptionIfSetIsCalledTwice() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
         assertThrows(Exception.class, () -> weightlifter.change("firstname","lastname")
                                                         .set("tani","kaka")
@@ -81,22 +81,22 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldThrowAnExceptionIfSetIsntCalledOnChange() throws Exception {
+    public void crudModelShouldThrowAnExceptionIfSetIsntCalledOnChange() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
         assertThrows(Exception.class, () -> weightlifter.grab()
                 .set("tani","kaka"));
     }
 
     @Test
-    public void metaModelShouldThrowAnExceptionIfChangeHasNoArgs() throws Exception {
+    public void crudModelShouldThrowAnExceptionIfChangeHasNoArgs() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
         assertThrows(Exception.class, () -> weightlifter.change());
     }
@@ -107,7 +107,7 @@ public class MetaModelTest {
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
 
-        MetaModel<Animal> modelAnimal = new MetaModel<>(Animal.class);
+        CrudModel<Animal> modelAnimal = new CrudModel<>(Animal.class);
         modelAnimal.add(new String[] {"weight", "height", "animalName"});
         String name1 = modelAnimal.getPreparedStatement();
 
@@ -118,11 +118,11 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldThrowExceptionIfAddValuesIsntCalledAfterAdd() throws Exception {
+    public void crudModelShouldThrowExceptionIfAddValuesIsntCalledAfterAdd() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> modelAnimal = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> modelAnimal = new CrudModel<>(Weightlifter.class);
 
         assertThrows(Exception.class, () -> modelAnimal.add(
                 new String[] {"firstname", "lastname", "weight", "height", "country_id"})
@@ -130,13 +130,13 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldBuiltAValidWhereClause() throws Exception {
+    public void crudModelShouldBuiltAValidWhereClause() throws Exception {
         Properties props = new Properties();
 
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
 
-        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
         weightlifter.grab()
                 .where(EQUALS, "country_id", "2")
@@ -153,13 +153,13 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldThrowAnExceptionIfWhereIsCalledSequentially() throws Exception {
+    public void crudModelShouldThrowAnExceptionIfWhereIsCalledSequentially() throws Exception {
         Properties props = new Properties();
 
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
 
-        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
         assertThrows(Exception.class,
                 () -> weightlifter.grab()
@@ -168,13 +168,13 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldThrowAnExceptionIfWhereIsCalledOnInsert() throws Exception {
+    public void crudModelShouldThrowAnExceptionIfWhereIsCalledOnInsert() throws Exception {
         Properties props = new Properties();
 
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
 
-        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
         assertThrows(Exception.class,
                 () -> weightlifter.add("firstname", "lastname")
@@ -182,11 +182,11 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldBuiltAValidDeleteStatement() throws Exception {
+    public void crudModelShouldBuiltAValidDeleteStatement() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
         int rowsAffected = weightlifter.remove()
                 .where(EQUALS, "weightlifter_id","6").runRemove();
@@ -199,11 +199,11 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldntPermanantlyChangeDatabaseBeforeCommitIsCalled() throws Exception {
+    public void crudModelShouldntPermanantlyChangeDatabaseBeforeCommitIsCalled() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> weightlifters = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifters = new CrudModel<>(Weightlifter.class);
 
         weightlifters.turnOffAutoCommit();
 
@@ -221,11 +221,11 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldPermanantlyChangeDatabaseAfterCommitIsCalled() throws Exception {
+    public void crudModelShouldPermanantlyChangeDatabaseAfterCommitIsCalled() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> weightlifters = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifters = new CrudModel<>(Weightlifter.class);
 
         weightlifters.turnOffAutoCommit();
 
@@ -245,11 +245,11 @@ public class MetaModelTest {
 
 
     @Test
-    public void metaModelShouldPersistNonAutoCommitStateAfterFirstCommit() throws Exception {
+    public void crudModelShouldPersistNonAutoCommitStateAfterFirstCommit() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> weightlifters = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifters = new CrudModel<>(Weightlifter.class);
 
         weightlifters.turnOffAutoCommit();
 
@@ -269,11 +269,11 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldAutoCommitAfterTurnOnAutoCommitIsCalled() throws Exception {
+    public void crudModelShouldAutoCommitAfterTurnOnAutoCommitIsCalled() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> weightlifters = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifters = new CrudModel<>(Weightlifter.class);
 
         weightlifters.turnOffAutoCommit();
 
@@ -294,11 +294,11 @@ public class MetaModelTest {
     }
 
     @Test
-    public void metaModelShouldUndoTransactionsAfterRollback() throws Exception {
+    public void crudModelShouldUndoTransactionsAfterRollback() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
-        MetaModel<Weightlifter> weightlifters = new MetaModel<>(Weightlifter.class);
+        CrudModel<Weightlifter> weightlifters = new CrudModel<>(Weightlifter.class);
 
         weightlifters.turnOffAutoCommit();
         weightlifters.addSavepoint("insert spanish lifters");

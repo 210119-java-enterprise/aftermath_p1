@@ -9,13 +9,13 @@ Aftermath uses annotations to map POJO/Java Beans to a database meta model. The 
 3. @Table - Database table
 4. @Attr - Table column/attribute
 
-You will annotate your fields and methods in your POJOs/Java Beans based on what they represent in the database. Make sure that you are using traditional getters and setters for your POJOs in order to integrate with Aftermath correctly. All the annotations have a name parameter so that you can mirror the name that is in the database. For instance, if you type @PK(columnName = "accountId"), this tells Aftermath that the annotated member is associated with an accountId that exists on your database. After the creation of your POJOs/Java Beans, add the class representation of your model by instantiating the MetaModel<T> class, like this:
+You will annotate your fields and methods in your POJOs/Java Beans based on what they represent in the database. Make sure that you are using traditional getters and setters for your POJOs in order to integrate with Aftermath correctly. All the annotations have a name parameter so that you can mirror the name that is in the database. For instance, if you type @PK(columnName = "accountId"), this tells Aftermath that the annotated member is associated with an accountId that exists on your database. After the creation of your POJOs/Java Beans, add the class representation of your model by instantiating the CrudModel<T> class, like this:
 
 ```java
-MetaModel<ModelClass> mm = new MetaModel<>(ModelClass.class);
+CrudModel<ModelClass> mm = new CrudModel<>(ModelClass.class);
 ```
 
-The MetaModel<T> class serves as the bridge between Aftermath and your database; the MetaMode<T> contains the CRUD methods necessary to build and execute CRUD operations (i.e. SELECT, INSERT, UPDATE, DELETE);
+The CrudModel<T> class serves as the bridge between Aftermath and your database; the CrudModel<T> contains the CRUD methods necessary to build and execute CRUD operations (i.e. SELECT, INSERT, UPDATE, DELETE);
 
 You will use an application.properties file to contain your database credentials; it's not recommended to post your credentials on Github in plain text. We also recommend you to include the path to your application.properties file in your .gitignore file. The structure you will use for your application.properties file is:
 
@@ -38,6 +38,6 @@ try {
 ```
 
 - [x] Basic documentation of the annotations and the xml config file
-- [x] MetalModel containment implementation
-- [ ] CRUD features
+- [x] CrudModel containment implementation
+- [x] CRUD features 
 

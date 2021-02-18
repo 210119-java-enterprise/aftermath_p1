@@ -10,7 +10,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MetaModel<T> {
+public class CrudModel<T> {
     private Class<T> clas;
     private ArrayList<FKField> fkFields;
     private ArrayList<AttrField> attrFields;
@@ -21,7 +21,7 @@ public class MetaModel<T> {
     private PreparedStatement ps;
     private Connection conn;
 
-    public MetaModel(Class<T> clas) {
+    public CrudModel(Class<T> clas) {
         this.clas = clas;
         this.attrFields = new ArrayList<>();
         getColumns();
@@ -76,7 +76,7 @@ public class MetaModel<T> {
      * @return calling object to enable method chain calling
      */
 
-    public MetaModel<T> grab(String... attrs) {
+    public CrudModel<T> grab(String... attrs) {
         ps = null; // clear the prepared statement
         appliedAttrs.clear();
 
@@ -112,7 +112,7 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> add(String... attrs) {
+    public CrudModel<T> add(String... attrs) {
         ps = null;
         appliedAttrs.clear();
 
@@ -143,7 +143,7 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> addValues(String... values) throws RuntimeException {
+    public CrudModel<T> addValues(String... values) throws RuntimeException {
         if (values.length != appliedAttrs.size()) {
             throw new MismatchedInsertArgumentsException();
         }
@@ -183,7 +183,7 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> change(String... attrs) throws SQLException {
+    public CrudModel<T> change(String... attrs) throws SQLException {
         if (attrs.length == 0) {
             throw new InvalidInputException("change() requires params given that it is constructing an update statement");
         }
@@ -214,7 +214,7 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> set(String... values) throws SQLException {
+    public CrudModel<T> set(String... values) throws SQLException {
         String psStr = ps.toString();
 
         if (!psStr.startsWith("update")) {
@@ -251,7 +251,7 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> remove() throws SQLException {
+    public CrudModel<T> remove() throws SQLException {
         appliedAttrs.clear();
         ps = null;
         Table table = clas.getAnnotation(Table.class);
@@ -260,7 +260,7 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> where() throws SQLException {
+    public CrudModel<T> where() throws SQLException {
         if (ps.toString().startsWith("insert"))
         {
             throw new BadMethodChainCallException("where() can't be called off of add() since insert statements can't have where clauses");
@@ -275,13 +275,13 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> where(Conditions cond, String attr, String value) throws SQLException {
+    public CrudModel<T> where(Conditions cond, String attr, String value) throws SQLException {
         where();
         builtWhereClause(cond, "", attr, value);
         return this;
     }
 
-    public MetaModel<T> and() throws SQLException {
+    public CrudModel<T> and() throws SQLException {
         if (ps.toString().startsWith("insert"))
         {
             throw new BadMethodChainCallException("cannot call and() on add() methods");
@@ -296,13 +296,13 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> and(Conditions cond, String attr, String value) throws SQLException {
+    public CrudModel<T> and(Conditions cond, String attr, String value) throws SQLException {
         and();
         builtWhereClause(cond, "", attr, value);
         return this;
     }
 
-    public MetaModel<T> or() throws SQLException {
+    public CrudModel<T> or() throws SQLException {
         if (ps.toString().startsWith("insert"))
         {
             throw new BadMethodChainCallException("cannot call or() on add() methods");
@@ -317,13 +317,13 @@ public class MetaModel<T> {
         return this;
     }
 
-    public MetaModel<T> or(Conditions cond, String attr, String value) throws SQLException {
+    public CrudModel<T> or(Conditions cond, String attr, String value) throws SQLException {
         or();
         builtWhereClause(cond, "", attr, value);
         return this;
     }
 
-    public MetaModel<T> not(Conditions cond, String attr, String value) throws SQLException {
+    public CrudModel<T> not(Conditions cond, String attr, String value) throws SQLException {
         builtWhereClause(cond, "not ", attr, value);
         return this;
     }
