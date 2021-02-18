@@ -58,7 +58,8 @@ public class MetaModelTest {
         MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
 
         weightlifter.change("lastname", "firstname", "weight").set("Putinn", "Vladimirr", "144")
-                .where(EQUALS, "firstname","Vladimir");//.runChange();
+                .where(EQUALS, "firstname","Vladimir")
+                .runChange();
 
         // asserting true since this doesn't really matter; we care about the structure of the insert statement
         // it's probably more efficient to use a regex, but let's print out the results for starters
