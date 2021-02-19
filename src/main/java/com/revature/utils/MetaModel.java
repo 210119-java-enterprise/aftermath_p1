@@ -1,13 +1,11 @@
 package com.revature.utils;
 import com.revature.annotations.*;
 import com.revature.exceptions.*;
-import com.sun.istack.internal.Nullable;
 import java.lang.String;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.*;
-import java.time.temporal.ValueRange;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -582,7 +580,6 @@ public class MetaModel<T> {
         return ps.executeUpdate();
     }
 
-    @Nullable
     private Method getMethodByFieldName(String fieldName) {
         for (Method currentMethod : methods) {
             if (currentMethod.getName().equals(fieldName)) {
