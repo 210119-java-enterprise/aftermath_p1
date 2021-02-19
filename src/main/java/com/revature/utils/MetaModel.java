@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.*;
+import java.time.temporal.ValueRange;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -370,6 +371,116 @@ public class MetaModel<T> {
         }
     }
 
+    public MetaModel<T> join(String tableName) throws SQLException {
+        if (!ps.toString().startsWith("select")) {
+            throw new BadMethodChainCallException("join() can only be called from a grab()");
+        }
+
+        if (ps.toString().contains("where"))
+        {
+            throw new BadMethodChainCallException("cannot call join() after where() is called.");
+        }
+
+        ps = conn.prepareStatement(ps.toString() + " join " + tableName + " ");
+
+        return this;
+    }
+
+    public MetaModel<T> on (String... keys) throws SQLException {
+        if (!ps.toString().startsWith("select")) {
+            throw new BadMethodChainCallException("join() can only be called from a grab()");
+        }
+
+        if (ps.toString().contains("where")) {
+            throw new BadMethodChainCallException("cannot call join() after where() is called.");
+        }
+
+        if (keys.length < 2) {
+            throw new InvalidInputException("on() required two key params.");
+        }
+
+        PKField pkField = getPrimaryKey();
+        int validKeys = 0;
+
+        for (String key : keys) {
+            if (pkField.getColumnName().equals(key)) {
+                ++validKeys;
+                continue;
+            }
+            else {
+                ArrayList<FKField> fkFields = getForeignKeys();
+
+                for (FKField fk : fkFields) {
+                    if (fk.getColumnName().equals(key)) {
+                        ++validKeys;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (validKeys < 2) {
+            throw new InvalidInputException("One or both of the passed in values are not primary or foreign keys");
+        }
+
+        ps = conn.prepareStatement(ps.toString() + " on (? = ?) ");
+        ps.setString(1, keys[0]);
+        ps.setString(2, keys[1]);
+        removeSingleQuotesFromJoin();
+
+        return this;
+    }
+
+    public MetaModel<T> using(String key) throws SQLException {
+        if (!ps.toString().startsWith("select"))
+        {
+            throw new BadMethodChainCallException("join() can only be called from a grab()");
+        }
+
+        if (ps.toString().contains("where"))
+        {
+            throw new BadMethodChainCallException("cannot call join() after where() is called.");
+        }
+
+        PKField pkField = getPrimaryKey();
+
+        if (pkField.getColumnName().equals(key)) {
+            ps = conn.prepareStatement(ps.toString() + " using (?) ");
+            ps.setString(1, key);
+            removeSingleQuotesFromJoin();
+            return this;
+        } else {
+            ArrayList<FKField> fkfields = getForeignKeys();
+
+            for (FKField fk: fkFields) {
+                if (fk.getColumnName().equals(key)) {
+                    ps = conn.prepareStatement(ps.toString() + " using (?) ");
+                    ps.setString(1, key);
+                    removeSingleQuotesFromJoin();
+                    return this;
+                }
+            }
+            throw new InvalidInputException("Passed in value is not a primary or foreign key");
+        }
+    }
+
+    /**
+     * Prepared statements tend to insert single quotes around their string arguments. This is good
+     * for regular arguments, but not for arguments that represent a column/attribute value.
+     * This method will remove those annoying single quotes
+     */
+    private void removeSingleQuotesFromJoin() throws SQLException {
+        String psStr = ps.toString();
+        boolean contains = psStr.contains("'");
+
+        while (contains) {
+            psStr = psStr.replace("'","");
+            contains = psStr.contains("'");
+        }
+
+        ps = conn.prepareStatement(psStr);
+    }
+
     public ArrayList<FKField> getForeignKeys() {
 
         ArrayList<FKField> foreignKeyFields = new ArrayList<>();
@@ -483,7 +594,7 @@ public class MetaModel<T> {
     }
 
     private ArrayList<T> mapResultSet(ResultSet rs) throws SQLException, IllegalAccessException,
-                                                           InstantiationException, InvocationTargetException {
+            InstantiationException, InvocationTargetException {
         T model;
         PKField pkField = getPrimaryKey();
         ArrayList<T> models = new ArrayList<>();

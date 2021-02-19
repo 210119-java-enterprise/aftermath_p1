@@ -3,6 +3,7 @@ import com.revature.utils.ConnectionFactory;
 import com.revature.utils.MetaModel;
 import org.junit.Test;
 import unitTests.mocks.Animal;
+import unitTests.mocks.Countries;
 import unitTests.mocks.Country;
 import unitTests.mocks.Weightlifter;
 
@@ -22,14 +23,21 @@ public class MetaModelTest {
         ConnectionFactory.addCredentials(props);
 
         MetaModel<Weightlifter> weightlifter = new MetaModel<>(Weightlifter.class);
+        Countries country = new Countries();
+        country.setName("Russia");
 
-        ArrayList<Weightlifter> warr = weightlifter.grab("country_id", "height", "weight").runGrab();
+        ArrayList<Weightlifter> warr = weightlifter
+                .grab("country_id", "height", "weight")
+                .join("countries")
+                .using("country_id")
+                .runGrab();
+
         warr.stream().forEach(System.out::println);
 
-        System.out.println("+========================================================================================+");
+        //System.out.println("+========================================================================================+");
 
-        warr = weightlifter.grab().runGrab();
-        warr.stream().forEach(System.out::println);
+        //warr = weightlifter.grab().runGrab();
+        //warr.stream().forEach(System.out::println);
 
         assertTrue(true);
     }
