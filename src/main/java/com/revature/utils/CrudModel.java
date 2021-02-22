@@ -121,6 +121,15 @@ public class CrudModel<T> {
             StringBuilder queryPlaceholders = new StringBuilder();
             String tableName = table.tableName();
             String delimiter;
+            System.out.println("length of attrs " + attrs.length);
+
+            if (attrs.length == 0) {
+                throw new InvalidInputException("Add requires a non empty value!");
+            }
+
+            if (attrs.length == 1 && attrs[0].eq) {
+                throw new InvalidInputException("Add requires a non empty value!");
+            }
 
             for (String attrStr: attrs) {
                 attrFields.stream()

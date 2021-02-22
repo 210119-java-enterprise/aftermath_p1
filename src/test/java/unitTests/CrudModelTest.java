@@ -1,4 +1,5 @@
 package unitTests;
+import com.revature.exceptions.InvalidInputException;
 import com.revature.utils.ConnectionFactory;
 import com.revature.utils.CrudModel;
 import org.junit.FixMethodOrder;
@@ -8,6 +9,7 @@ import unitTests.mocks.Animal;
 import unitTests.mocks.Country;
 import unitTests.mocks.Weightlifter;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -329,5 +331,17 @@ public class CrudModelTest {
         weightlifters.runCommit();
 
         System.out.println(weightlifters.getPreparedStatement());
+    }
+
+    @Test
+    public void r_crudMethodShouldThrowAnExceptionIfAddIsGivenEmptyValue() throws InvalidInputException, Exception {
+        Properties props = new Properties();
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+        CrudModel<Weightlifter> weightlifters = new CrudModel<>(Weightlifter.class);
+
+        weightlifters.turnOffAutoCommit();
+
+        assertThrows(InvalidInputException.class, () -> weightlifters.add());
     }
 }
