@@ -6,4 +6,5 @@
 /target/maven-status
 /target/classes/*.properties
 /target/classes/META-INF/
+/target/surefire-reports
 /src/main/resources
