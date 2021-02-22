@@ -113,7 +113,7 @@ int rowsAffected = weightlifter.add("firstname", "lastname", "weight", "height",
                 .addValues("Meredith", "Alwine", "71", "172", String.valueOf(Country.USA.ordinal() + 1))
                 .runAdd();
 ```
-As one can see, call the add() method of a CrudModel object with the columns you want to insert values for. Then call addValues() off of either add() or another addValues() method; the arguments for addValues() corresponds to the values associated with a column. If you establish an order on add(), that order must be applied to the addValues() argument. Call runAdd() to execute an insert statement; the returned value is the number of rows inserted. 
+As one can see, call the add() method of a CrudModel object with the columns you want to insert values for. Then call addValues() off of either add() or another addValues() method; the arguments for addValues() correspond to the values associated with a column. If you establish an order on add(), that order must be applied to the addValues() argument. Call runAdd() to execute an insert statement; the returned value is the number of rows inserted. 
 
 ### change() and set()
 Call change() to build an update statement; the arguments are the columns to update. Call set() to adjust the values to the columns specified in change(). Example:
@@ -139,7 +139,7 @@ int rowsAffected = weightlifter.remove()
 ```
 
 ## Transactions
-Sometimes, you don't want a CRUD operation to fully take place until other CRUD operations take place. To start off with transactions, turn off auto commit by calling turnAutoCommitOff() before you make your CRUD operations. 
+Sometimes, you don't want a CRUD operation to fully take place until other CRUD operations take place. To start off with transactions, turn off auto commit by calling turnOffAutoCommit() before you make your CRUD operations. 
 You can create savepoints by calling addSavepoint() and pass the name of your savepoint as an argument. To rollback, call the rollback() method and pass it the name of a savepoint you have created. Example:
 
 ```java
