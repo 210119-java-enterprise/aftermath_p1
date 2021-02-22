@@ -9,6 +9,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * This class acts as the hub between the user and the JDBC.
+ * @param <T> Type of a user-defined annotated model
+ */
 public class CrudModel<T> {
     private Class<T> clas;
     private ArrayList<FKField> fkFields;
@@ -20,6 +24,10 @@ public class CrudModel<T> {
     private PreparedStatement ps;
     private Connection conn;
 
+    /**
+     * The constructor creates all the necessary instance-level objects needed for CRUD operations
+     * @param clas Class of the user's model/POJO
+     */
     public CrudModel(Class<T> clas) {
         this.clas = clas;
         this.attrFields = new ArrayList<>();
@@ -32,18 +40,35 @@ public class CrudModel<T> {
         savepoints = new HashMap<>();
     }
 
+    /**
+     * Turns off auto commit. Call this method during transactional CRUD operations
+     * @throws SQLException
+     */
     public void turnOffAutoCommit() throws SQLException {
         conn.setAutoCommit(false);
     }
 
+    /**
+     * Turns on auto commit
+     * @throws SQLException
+     */
     public void turnOnAutoCommit() throws SQLException {
         conn.setAutoCommit(true);
     }
 
+    /**
+     * Execute a commit to the database
+     * @throws SQLException
+     */
     public void runCommit() throws SQLException {
         conn.commit();
     }
 
+    /**
+     * Creates a savepoint
+     * @param name the name of the savepoint; pass the value of this savepoint's name into a rollback() method
+     * @throws SQLException
+     */
     public void addSavepoint(String name) throws SQLException {
         if (name == null || name.isEmpty()) {
             throw new InvalidInputException("Savepoint needs an associated name");
@@ -52,6 +77,10 @@ public class CrudModel<T> {
         savepoints.put(name, conn.setSavepoint());
     }
 
+    /**
+     * Remove a savepoint
+     * @param name
+     */
     public void removeSavepoint(String name) {
         if (name == null || name.isEmpty()) {
             throw new InvalidInputException("Key is not value");
@@ -60,6 +89,11 @@ public class CrudModel<T> {
         savepoints.remove(name);
     }
 
+    /**
+     * Triggers a rollback to the latest savepoint
+     * @param name The name of the savepoint you are trying to rollback to
+     * @throws SQLException
+     */
     public void rollback(String name) throws SQLException {
         if (name == null || name.isEmpty()) {
             throw new InvalidInputException("Key is not a value");
@@ -71,7 +105,7 @@ public class CrudModel<T> {
 
     /**
      * Corresponds to a select SQL statement
-     * @param attrs String that contains one attribute/table column
+     * @param attrs separate string arguments or a string array that contains one or more attribute/table column
      * @return calling object to enable method chain calling
      */
 
@@ -111,6 +145,11 @@ public class CrudModel<T> {
         return this;
     }
 
+    /**
+     * Corresponds to an insert statement.
+     * @param attrs separate string arguments or a string array that contains one or more attribute/table column
+     * @return calling object to enable method chain calling
+     */
     public CrudModel<T> add(String... attrs) {
         ps = null;
         appliedAttrs.clear();
@@ -142,6 +181,12 @@ public class CrudModel<T> {
         return this;
     }
 
+    /**
+     * Used in conjunction with add() and previous addValues()
+     * @param values the values to insert into a table row
+     * @return separate string arguments or a string array that contains one or more attribute/table column
+     * @throws RuntimeException
+     */
     public CrudModel<T> addValues(String... values) throws RuntimeException {
         if (values.length != appliedAttrs.size()) {
             throw new MismatchedInsertArgumentsException();
@@ -182,6 +227,12 @@ public class CrudModel<T> {
         return this;
     }
 
+    /**
+     * Corresponds to an update statement
+     * @param attrs separate string arguments or a string array that contains one or more attribute/table column
+     * @return calling object to enable method chain calling
+     * @throws SQLException
+     */
     public CrudModel<T> change(String... attrs) throws SQLException {
         if (attrs.length == 0) {
             throw new InvalidInputException("change() requires params given that it is constructing an update statement");
@@ -213,6 +264,12 @@ public class CrudModel<T> {
         return this;
     }
 
+    /**
+     * Used in conjunction with change()
+     * @param values separate string arguments or a string array that contains one or more attribute/table column
+     * @return calling object to enable method chain calling
+     * @throws SQLException
+     */
     public CrudModel<T> set(String... values) throws SQLException {
         String psStr = ps.toString();
 
@@ -250,6 +307,11 @@ public class CrudModel<T> {
         return this;
     }
 
+    /**
+     * Corresponds to a delete statement
+     * @return calling object to enable method chain calling
+     * @throws SQLException
+     */
     public CrudModel<T> remove() throws SQLException {
         appliedAttrs.clear();
         ps = null;
@@ -259,6 +321,12 @@ public class CrudModel<T> {
         return this;
     }
 
+    /**
+     * Corresponds to a where clause. Use in conjunction with grab(), change(), and remove(). Call the
+     * zero param method if you intend on using the not() method right after this
+     * @return calling object to enable method chain calling
+     * @throws SQLException
+     */
     public CrudModel<T> where() throws SQLException {
         if (ps.toString().startsWith("insert"))
         {
@@ -274,12 +342,25 @@ public class CrudModel<T> {
         return this;
     }
 
+    /**
+     * A where clause. Use in conjunction with grab(), change(), and delete()
+     * @param cond Enum value that represents an inequality operator
+     * @param attr table column
+     * @param value table values
+     * @return calling object to enable method chain calling
+     * @throws SQLException
+     */
     public CrudModel<T> where(Conditions cond, String attr, String value) throws SQLException {
         where();
         builtWhereClause(cond, "", attr, value);
         return this;
     }
 
+    /**
+     * Logical AND. Use zero param if not() is called after this
+     * @return calling object to enable method chain calling
+     * @throws SQLException
+     */
     public CrudModel<T> and() throws SQLException {
         if (ps.toString().startsWith("insert"))
         {
@@ -295,12 +376,25 @@ public class CrudModel<T> {
         return this;
     }
 
+    /**
+     * Logical AND
+     * @param cond Enum value that represents an inequality operator
+     * @param attr Table column
+     * @param value Table value
+     * @return Calling object to enable method chain calling
+     * @throws SQLException
+     */
     public CrudModel<T> and(Conditions cond, String attr, String value) throws SQLException {
         and();
         builtWhereClause(cond, "", attr, value);
         return this;
     }
 
+    /**
+     * Logical OR. Call zero param if not() is called after this
+     * @return
+     * @throws SQLException
+     */
     public CrudModel<T> or() throws SQLException {
         if (ps.toString().startsWith("insert"))
         {
@@ -316,17 +410,41 @@ public class CrudModel<T> {
         return this;
     }
 
+    /**
+     * Logical OR
+     * @param cond Enum value that represents an inequality operator
+     * @param attr Table column
+     * @param value Table value
+     * @return Calling object to enable method chain calling
+     * @throws SQLException
+     */
     public CrudModel<T> or(Conditions cond, String attr, String value) throws SQLException {
         or();
         builtWhereClause(cond, "", attr, value);
         return this;
     }
 
+    /**
+     * Logical NOT
+     * @param cond Enum value that represents an inequality operator
+     * @param attr Table column
+     * @param value Table value
+     * @return Calling object to enable method chain calling
+     * @throws SQLException
+     */
     public CrudModel<T> not(Conditions cond, String attr, String value) throws SQLException {
         builtWhereClause(cond, "not ", attr, value);
         return this;
     }
 
+    /**
+     * Helper method to where(), or(), and(), and not(). This method parses the field data types
+     * @param cond
+     * @param logicalOp
+     * @param attr
+     * @param value
+     * @throws SQLException
+     */
     private void builtWhereClause(Conditions cond, String logicalOp, String attr, String value) throws SQLException {
         AttrField selectedField = null;
 
@@ -369,6 +487,12 @@ public class CrudModel<T> {
         }
     }
 
+    /**
+     * Didn't have time to implement joins. DON'T USE
+     * @param tableName
+     * @return
+     * @throws SQLException
+     */
     public CrudModel<T> join(String tableName) throws SQLException {
         if (!ps.toString().startsWith("select")) {
             throw new BadMethodChainCallException("join() can only be called from a grab()");
@@ -429,6 +553,12 @@ public class CrudModel<T> {
         return this;
     }
 
+    /**
+     * Didn't get around to implementing joins. DON'T USE
+     * @param key
+     * @return
+     * @throws SQLException
+     */
     public CrudModel<T> using(String key) throws SQLException {
         if (!ps.toString().startsWith("select"))
         {
@@ -479,6 +609,10 @@ public class CrudModel<T> {
         ps = conn.prepareStatement(psStr);
     }
 
+    /**
+     *
+     * @return list of all the foreign keys
+     */
     public ArrayList<FKField> getForeignKeys() {
 
         ArrayList<FKField> foreignKeyFields = new ArrayList<>();
@@ -493,6 +627,11 @@ public class CrudModel<T> {
         return foreignKeyFields;
     }
 
+    /**
+     *
+     * @param name column name
+     * @return Attribute/column that matches name
+     */
     private AttrField getAttributeByColumnName(String name) {
         for (AttrField attr : attrFields) {
             if (attr.getColumnName().equals(name)) {
@@ -503,6 +642,10 @@ public class CrudModel<T> {
         return null;
     }
 
+    /**
+     *
+     * @return primary key
+     */
     public PKField getPrimaryKey() {
 
         Field[] fields = clas.getDeclaredFields();
@@ -515,6 +658,10 @@ public class CrudModel<T> {
         throw new RuntimeException("Did not find a field annotated with @Id in: " + clas.getName());
     }
 
+    /**
+     *
+     * @return list of annotated columns
+     */
     public ArrayList<AttrField> getColumns() {
 
         Field[] fields = clas.getDeclaredFields();
@@ -532,10 +679,18 @@ public class CrudModel<T> {
         return attrFields;
     }
 
+    /**
+     *
+     * @return SQL statement generated by JDBC. Used mostly in integration tests
+     */
     public String getPreparedStatement() {
         return ps.toString();
     }
 
+    /**
+     * Executes insert statement
+     * @return ArrayList of models
+     */
     public ArrayList<T> runGrab() {
         if (!ps.toString().startsWith("select")) {
             throw new BadMethodChainCallException("runGrab() can only be called when grab() is the head of the method chain.");
@@ -552,6 +707,11 @@ public class CrudModel<T> {
         return models;
     }
 
+    /**
+     * Executes insert statement
+     * @return number of rows inserted
+     * @throws Exception
+     */
     public int runAdd() throws Exception {
         if (!ps.toString().startsWith("insert")) {
             throw new BadMethodChainCallException("runAdd() can only be called from addValues()");
@@ -564,6 +724,11 @@ public class CrudModel<T> {
         return ps.executeUpdate();
     }
 
+    /**
+     * EXecutes update statement
+     * @return number of rows updated
+     * @throws Exception
+     */
     public int runChange() throws Exception {
         if (!ps.toString().startsWith("update")) {
             throw new BadMethodChainCallException("runChange() can only be called from set()");
@@ -572,6 +737,11 @@ public class CrudModel<T> {
         return ps.executeUpdate();
     }
 
+    /**
+     * Executes delete statements
+     * @return number of rows deleted
+     * @throws Exception
+     */
     public int runRemove() throws Exception {
         if (!ps.toString().startsWith("delete")) {
             throw new BadMethodChainCallException("runRemove() can only be called when remove() is the head of the method chain.");
@@ -580,6 +750,11 @@ public class CrudModel<T> {
         return ps.executeUpdate();
     }
 
+    /**
+     *
+     * @param fieldName
+     * @return method that matches param
+     */
     private Method getMethodByFieldName(String fieldName) {
         for (Method currentMethod : methods) {
             if (currentMethod.getName().equals(fieldName)) {
@@ -590,6 +765,18 @@ public class CrudModel<T> {
         return null;
     }
 
+    /**
+     * Grabs the results from ResultSet, and calls the models setters and getters via Reflection
+     * Dependent on users using standard setter and getter names
+     * Rationale - It's common place for Java developers to autogenerate their setters and getters, so this
+     * method is taking advantage of the naming convention these IDE generators use
+     * @param rs ResultSet
+     * @return Arraylist of the user's models
+     * @throws SQLException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws InvocationTargetException
+     */
     private ArrayList<T> mapResultSet(ResultSet rs) throws SQLException, IllegalAccessException,
             InstantiationException, InvocationTargetException {
         T model;
