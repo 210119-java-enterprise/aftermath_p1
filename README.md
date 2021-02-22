@@ -74,8 +74,8 @@ To use the conditions enum with the where clase methods, pass in an enum values 
 ```java
 CrudModel<Artist> artists = new CrudModel<Artist>(Artist.class);
 artist.grab("firstname","lastname","age")
-   .where(EQUALS, "firstname", "Bob")
-   .and(EQUALS, "lastname", "Ross");
+   .where(Conditions.EQUALS, "firstname", "Bob")
+   .and(Conditions.EQUALS, "lastname", "Ross");
 ```
 
 If you want to use a negation operation on and() and or(), call and() or or() with zero arguments, then call not() afterwards with the first argument being the Condition enum value you want to use, followed by the column name and value. Like this:
@@ -83,9 +83,9 @@ If you want to use a negation operation on and() and or(), call and() or or() wi
 ```java
 CrudModel<Artist> artists = new CrudModel<Artist>(Artist.class);
 artist.grab("firstname","lastname","age")
-   .where(EQUALS, "firstname", "Bob")
+   .where(Conditions.EQUALS, "firstname", "Bob")
    .and()
-   .not(EQUALS, "lastname", "Ross");
+   .not(Conditions.EQUALS, "lastname", "Ross");
 ```
 
 #### runGrab()
@@ -93,8 +93,8 @@ This method returns an ArrayList of your model. Example:
 ```java
 CrudModel<Artist> artists = new CrudModel<Artist>(Artist.class);
 ArrayList<Artist> artist.grab("firstname","lastname","age")
-   .where(EQUALS, "firstname", "Bob")
-   .and(EQUALS, "lastname", "Ross")
+   .where(Conditions.EQUALS, "firstname", "Bob")
+   .and(Conditions.EQUALS, "lastname", "Ross")
    .runGrab();
 ```
 
@@ -123,7 +123,7 @@ CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
 int rowsAffected = weightlifter.change("lastname", "firstname", "weight")
                 .set("Tani", "Kashiri", "144")
-                .where(EQUALS, "firstname","Tatiana")
+                .where(Conditions.EQUALS, "firstname","Tatiana")
                 .runChange();
 ```
 
@@ -134,7 +134,7 @@ Does what you expect: removes rows based on the criteria set by where(). Example
 CrudModel<Weightlifter> weightlifter = new CrudModel<>(Weightlifter.class);
 
 int rowsAffected = weightlifter.remove()
-                .where(EQUALS, "weightlifter_id","6")
+                .where(Conditions.EQUALS, "weightlifter_id","6")
 		.runRemove();
 ```
 
