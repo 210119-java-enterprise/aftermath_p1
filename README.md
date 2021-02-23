@@ -1,5 +1,5 @@
 # Aftermath ORM
-This is a custom ORM created by Jonathan "Jay" Norman. It uses a wrapper around JDBC for the purpose of simplifying CRUD operations between a Java application and a SQL database (e.g. Postgres, Maria, MySQL, Oracle). This ORM takes influences from ORMs across languages, such as Hiberate (Java) and Mongoose (Node.js).
+This is a custom ORM created by Jonathan "Jay" Norman. It uses a wrapper around JDBC for the purpose of simplifying CRUD operations between a Java application and a SQL database (e.g. Postgres, Maria, MySQL, Oracle). This ORM takes influences from ORMs across languages, such as Hiberate (Java) and Mongoose (Node.js). It currently has the ability to execute basic CRUD operations including a WHERE clause that uses the AND, OR, and NOT operators.
 ## Origin of the name
 We assure you that our ORM has no connection to Dr. Dre and Aftermath Entertainment! Aftermath is a pun on the SQL acronym; SQL is typically pronounced "sequel", and a synonym of "sequel" is "aftermath".
 ## Setup
