@@ -10,30 +10,33 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class ModelScraper {
-    protected static Class<?> clas;
-    protected static ArrayList<AttrField> attrFields = new ArrayList<>();
-    protected static ArrayList<FKField> fkFields = new ArrayList<>();
-    protected static ArrayList<Method> methods = new ArrayList<>();
-    private static ArrayList<AttrField> appliedFields;
+    protected Class<?> clas;
+    protected ArrayList<AttrField> attrFields = new ArrayList<>();
+    protected ArrayList<FKField> fkFields = new ArrayList<>();
+    protected Method[] methods;
+    private ArrayList<AttrField> appliedFields;
 
-    protected static void setTargetClass(Class<?> clas) {
-        ModelScraper.clas = clas;
+    ModelScraper() { }
+
+    protected void setTargetClass(Class<?> clas) {
+        this.clas = clas;
         attrFields.clear();
-        methods.clear();
+        methods = clas.getMethods();
         fkFields.clear();
         getColumns();
         fkFields = getForeignKeys();
     }
 
-    protected static void setAppliedFields(ArrayList<AttrField> appliedFields) {
-        ModelScraper.appliedFields = appliedFields;
+    protected void setAppliedFields(ArrayList<AttrField> appliedFields) {
+        this.appliedFields = appliedFields;
     }
+    protected void setAttrFields(ArrayList<AttrField> attrFields) { this.attrFields = attrFields; }
 
-    protected static ArrayList<AttrField> getAppliedFields() {
+    protected ArrayList<AttrField> getAppliedFields() {
         return appliedFields;
     }
 
-    protected static ArrayList<FKField> getForeignKeys() {
+    protected ArrayList<FKField> getForeignKeys() {
 
         ArrayList<FKField> foreignKeyFields = new ArrayList<>();
         Field[] fields = clas.getDeclaredFields();
@@ -47,7 +50,7 @@ public class ModelScraper {
         return foreignKeyFields;
     }
 
-    protected static AttrField getAttributeByColumnName(String name) {
+    protected AttrField getAttributeByColumnName(String name) {
         for (AttrField attr : attrFields) {
             if (attr.getColumnName().equals(name)) {
                 return attr;
@@ -57,7 +60,7 @@ public class ModelScraper {
         return null;
     }
 
-    protected static PKField getPrimaryKey() {
+    protected PKField getPrimaryKey() {
 
         Field[] fields = clas.getDeclaredFields();
         for (Field field : fields) {
@@ -69,13 +72,14 @@ public class ModelScraper {
         throw new RuntimeException("Did not find a field annotated with @Id in: " + clas.getName());
     }
 
-    protected static ArrayList<AttrField> getColumns() {
+    protected ArrayList<AttrField> getColumns() {
 
         Field[] fields = clas.getDeclaredFields();
         for (Field field : fields) {
             Attr column = field.getAnnotation(Attr.class);
             if (column != null) {
                 attrFields.add(new AttrField(field));
+                System.out.println(column.columnName());
             }
         }
 
@@ -87,7 +91,7 @@ public class ModelScraper {
     }
 
     @Nullable
-    protected static Method getMethodByFieldName(String fieldName) {
+    protected Method getMethodByFieldName(String fieldName) {
         for (Method currentMethod : methods) {
             if (currentMethod.getName().equals(fieldName)) {
                 return currentMethod;

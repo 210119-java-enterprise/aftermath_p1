@@ -6,26 +6,29 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class ResultSetParser<T> {
+class ResultSetParser<T> {
     private Class<T> clas;
+    private Grab<T> operator;
 
-    protected ResultSetParser(Class<T> clas) {
+    ResultSetParser(Class<T> clas, Grab<T> operator) {
         this.clas = clas;
+        this.operator = operator;
     }
 
-    protected ArrayList<T> mapResultSet(ResultSet rs) throws SQLException, IllegalAccessException,
+    ArrayList<T> mapResultSet(ResultSet rs) throws SQLException, IllegalAccessException,
             InstantiationException, InvocationTargetException {
         T model;
-        PKField pkField = ModelScraper.getPrimaryKey();
+        PKField pkField = operator.getPrimaryKey();
+
         ArrayList<T> models = new ArrayList<>();
-        ArrayList<FKField> fkFields = ModelScraper.fkFields;
+        ArrayList<FKField> fkFields = operator.fkFields;
 
         while (rs.next()) {
             model = clas.newInstance();
             char[] pkNameArr = pkField.getName().toCharArray();
             pkNameArr[0] = Character.toUpperCase(pkNameArr[0]);
             String pkName = String.valueOf(pkNameArr);
-            Method pkSetId = ModelScraper.getMethodByFieldName("set" + pkName);
+            Method pkSetId = operator.getMethodByFieldName("set" + pkName);
 
             try {
                 int pkk = rs.getInt(pkField.getColumnName());
@@ -38,9 +41,10 @@ public class ResultSetParser<T> {
 
                 setterFKNameArr[0] = Character.toUpperCase(setterFKNameArr[0]);
                 FKName = String.valueOf(setterFKNameArr);
-                Method fkSetId = ModelScraper.getMethodByFieldName("set" + FKName);
+                Method fkSetId = operator.getMethodByFieldName("set" + FKName);
 
                 try {
+                    System.out.println(FKName);
                     fkSetId.invoke(model, rs.getInt(fk.getColumnName()));
                 } catch (SQLException | InvocationTargetException e) {
                     // do nothing; added try-catch block since ResultSet throws an exception if the params aren't
@@ -48,12 +52,12 @@ public class ResultSetParser<T> {
                 }
             }
 
-            for (AttrField selectedAttr: ModelScraper.getAppliedFields()) {
+            for (AttrField selectedAttr: operator.getAppliedFields()) {
                 Class<?> type = selectedAttr.getType();
                 char[] getterAttrNameArr = selectedAttr.getName().toCharArray();
                 getterAttrNameArr[0] = Character.toUpperCase(getterAttrNameArr[0]);
                 String attrMethodName = String.valueOf(getterAttrNameArr);
-                Method setAttr = ModelScraper.getMethodByFieldName("set" + attrMethodName);
+                Method setAttr = operator.getMethodByFieldName("set" + attrMethodName);
 
                 if (type == String.class) {
                     setAttr.invoke(model, rs.getString(selectedAttr.getColumnName()));

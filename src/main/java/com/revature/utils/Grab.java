@@ -1,23 +1,24 @@
-package com.revature.sqlstatements;
+package com.revature.utils;
 
 import com.revature.annotations.Table;
-import com.revature.utils.AttrField;
-import com.revature.utils.CrudModel;
-import com.revature.utils.ModelScraper;
+import com.revature.exceptions.BadMethodChainCallException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class Grab<T> extends ModelScraper {
-    private PreparedStatement ps;
+class Grab<T> extends ModelScraper {
+    PreparedStatement ps;
     private Connection conn;
     private CrudModel<T> ref;
     private ArrayList<AttrField> appliedAttrs;
 
-    public Grab (Connection conn, CrudModel<T> ref) {
-        this.conn = conn;
+    Grab (CrudModel<T> ref) {
+        this.setTargetClass(ref.clas);
+        this.conn = ref.conn;
         this.ref = ref;
         appliedAttrs = new ArrayList<>();
     }
@@ -27,7 +28,8 @@ public class Grab<T> extends ModelScraper {
      * @param attrs String that contains one attribute/table column
      * @return calling object to enable method chain calling
      */
-    public CrudModel<T> grab(String... attrs) {
+
+    CrudModel<T> grab(String... attrs) {
         appliedAttrs.clear();
 
         try {
@@ -60,5 +62,27 @@ public class Grab<T> extends ModelScraper {
         }
 
         return ref;
+    }
+
+    ArrayList<T> runGrab() {
+        if (!ps.toString().startsWith("select")) {
+            throw new BadMethodChainCallException("runGrab() can only be called when grab() is the head of the method chain.");
+        }
+
+        ArrayList<T> models = new ArrayList<>();
+        try {
+            ResultSet rs = ps.executeQuery();
+
+            if (appliedAttrs.size() == 0) {
+                setAppliedFields(appliedAttrs);
+            }
+
+            ResultSetParser<T> mapClas = new ResultSetParser<T>(ref.clas, this);
+            models = mapClas.mapResultSet(rs);
+        } catch (SQLException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return models;
     }
 }
