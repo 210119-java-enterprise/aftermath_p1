@@ -2,6 +2,7 @@ package com.revature.utils;
 
 import com.revature.annotations.Table;
 import com.revature.exceptions.BadMethodChainCallException;
+import com.revature.exceptions.InvalidInputException;
 import com.revature.exceptions.MismatchedInsertArgumentsException;
 
 import java.sql.Connection;
@@ -24,6 +25,10 @@ class Add<T> extends ModelScraper {
     }
 
     CrudModel<T> add(String... attrs) {
+        if (attrs.length == 0) {
+            throw new InvalidInputException("add() requires at least one input");
+        }
+
         ps = null;
         appliedAttrs.clear();
 
