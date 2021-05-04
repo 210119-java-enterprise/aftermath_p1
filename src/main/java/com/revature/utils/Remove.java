@@ -15,6 +15,7 @@ class Remove<T> extends ModelScraper {
     private ArrayList<AttrField> appliedAttrs;
 
     Remove (CrudModel<T> ref) {
+        setTargetClass(ref.clas);
         this.conn = ref.conn;
         this.ref = ref;
         appliedAttrs = new ArrayList<>();
@@ -23,14 +24,14 @@ class Remove<T> extends ModelScraper {
     CrudModel<T> remove() throws SQLException {
         appliedAttrs.clear();
         ps = null;
-        Table table = clas.getAnnotation(Table.class);
+        Table table = ref.clas.getAnnotation(Table.class);
         String tableName = table.tableName();
         ps = conn.prepareStatement("delete from " + tableName);
         return ref;
     }
 
-    int runRemove() throws Exception {
-        if (!ps.toString().startsWith("delete")) {
+    int runRemove(String delStr) throws Exception {
+        if (!delStr.startsWith("delete")) {
             throw new BadMethodChainCallException("runRemove() can only be called when remove() is the head of the method chain.");
         }
 

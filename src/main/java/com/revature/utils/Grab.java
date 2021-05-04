@@ -33,7 +33,7 @@ class Grab<T> extends ModelScraper {
         appliedAttrs.clear();
 
         try {
-            Table table = clas.getAnnotation(Table.class);
+            Table table = ref.clas.getAnnotation(Table.class);
             String tableName = table.tableName();
 
             if (attrs.length == 0) {
@@ -72,10 +72,7 @@ class Grab<T> extends ModelScraper {
         ArrayList<T> models = new ArrayList<>();
         try {
             ResultSet rs = ps.executeQuery();
-
-            if (appliedAttrs.size() == 0) {
-                setAppliedFields(appliedAttrs);
-            }
+            setAppliedFields(appliedAttrs);
 
             ResultSetParser<T> mapClas = new ResultSetParser<T>(ref.clas, this);
             models = mapClas.mapResultSet(rs);

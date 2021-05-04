@@ -12,16 +12,19 @@ class Where<T> extends ModelScraper {
     private Connection conn;
     private CrudModel<T> ref;
     private ArrayList<AttrField> appliedAttrs;
+    private String connStr;
 
     Where(CrudModel<T> ref) throws SQLException {
         this.conn = ref.conn;
         this.ref = ref;
         setTargetClass(ref.clas);
         appliedAttrs = new ArrayList<>();
+        connStr = "";
     }
 
     void setPreparedStatementStr(String ps) throws SQLException {
-        this.ps = conn.prepareStatement(ps);
+        connStr += ps + " ";
+        this.ps = conn.prepareStatement(connStr);
     }
 
     CrudModel<T> where() throws SQLException {
@@ -36,12 +39,14 @@ class Where<T> extends ModelScraper {
         }
 
         ps = conn.prepareStatement(ps.toString() + " where ");
+        ref.ps = ps;
         return ref;
     }
 
     CrudModel<T> where(Conditions cond, String attr, String value) throws SQLException {
         where();
         builtWhereClause(cond, "", attr, value);
+        ref.ps = ps;
         return ref;
     }
 

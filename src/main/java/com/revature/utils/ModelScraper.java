@@ -14,7 +14,7 @@ public class ModelScraper {
     protected ArrayList<AttrField> attrFields = new ArrayList<>();
     protected ArrayList<FKField> fkFields = new ArrayList<>();
     protected Method[] methods;
-    private ArrayList<AttrField> appliedFields;
+    protected ArrayList<AttrField> appliedFields;
 
     ModelScraper() { }
 

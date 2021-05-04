@@ -17,6 +17,7 @@ class Change<T> extends ModelScraper {
     private ArrayList<Integer> filteredUpdateAttrIndices;
 
     Change (CrudModel<T> ref) {
+        setTargetClass(ref.clas);
         this.conn = ref.conn;
         this.ref = ref;
         appliedAttrs = new ArrayList<>();
@@ -31,7 +32,7 @@ class Change<T> extends ModelScraper {
         filteredUpdateAttrIndices.clear();
 
         ps = null;
-        Table table = clas.getAnnotation(Table.class);
+        Table table = ref.clas.getAnnotation(Table.class);
         String tableName = table.tableName();
         appliedAttrs.clear();
         int count = 0;

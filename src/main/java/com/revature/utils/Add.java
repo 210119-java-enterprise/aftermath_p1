@@ -16,6 +16,7 @@ class Add<T> extends ModelScraper {
     private ArrayList<AttrField> appliedAttrs;
 
     Add (CrudModel<T> ref) {
+        setTargetClass(ref.clas);
         this.conn = ref.conn;
         this.ref = ref;
         this.ps = ref.ps;
@@ -27,7 +28,7 @@ class Add<T> extends ModelScraper {
         appliedAttrs.clear();
 
         try {
-            Table table = clas.getAnnotation(Table.class);
+            Table table = ref.clas.getAnnotation(Table.class);
             ArrayList<String> attrFilter = new ArrayList<>();
             StringBuilder queryPlaceholders = new StringBuilder();
             String tableName = table.tableName();

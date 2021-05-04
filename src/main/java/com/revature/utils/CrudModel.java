@@ -97,12 +97,16 @@ public class CrudModel<T> {
 
     public CrudModel<T> where() throws SQLException, ClassNotFoundException {
         criteria.setPreparedStatementStr(getPreparedStatement());
-        return criteria.where();
+        CrudModel<T> ref = criteria.where();
+        setPreparedStatement(ref.ps);
+        return ref;
     }
 
     public CrudModel<T> where(Conditions cond, String attr, String value) throws SQLException, ClassNotFoundException {
         criteria.setPreparedStatementStr(getPreparedStatement());
-        return criteria.where(cond, attr, value);
+        CrudModel<T> ref = criteria.where(cond, attr, value);
+        setPreparedStatement(ref.ps);
+        return ref;
     }
 
     public CrudModel<T> and() throws SQLException {
@@ -123,6 +127,29 @@ public class CrudModel<T> {
 
     public CrudModel<T> not(Conditions cond, String attr, String value) throws SQLException {
         return criteria.not(cond, attr, value);
+    }
+
+    public void setPreparedStatement(PreparedStatement ps) throws ClassNotFoundException {
+        if (currentOperation == null) {
+            throw new BadMethodChainCallException("No operation has been initialized.");
+        }
+
+        switch(currentOperation.getClass().getSimpleName()) {
+            case "Grab":
+                select.ps = ps;
+                break;
+            case "Add":
+                insert.ps = ps;
+                break;
+            case "Change":
+                update.ps = ps;
+                break;
+            case "Remove":
+                delete.ps = ps;
+                break;
+            default:
+                throw new ClassNotFoundException("Class not located");
+        }
     }
 
     public String getPreparedStatement() throws ClassNotFoundException {
@@ -157,6 +184,6 @@ public class CrudModel<T> {
     }
 
     public int runRemove() throws Exception {
-        return delete.runRemove();
+        return delete.runRemove(getPreparedStatement());
     }
 }
