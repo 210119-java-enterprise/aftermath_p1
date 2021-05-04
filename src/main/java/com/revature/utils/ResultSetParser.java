@@ -44,7 +44,6 @@ class ResultSetParser<T> {
                 Method fkSetId = operator.getMethodByFieldName("set" + FKName);
 
                 try {
-                    System.out.println(FKName);
                     fkSetId.invoke(model, rs.getInt(fk.getColumnName()));
                 } catch (SQLException | InvocationTargetException e) {
                     // do nothing; added try-catch block since ResultSet throws an exception if the params aren't

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="18" failures="0" name="unitTests.CrudModelTest" time="1.513" errors="0" skipped="0">
+<testsuite tests="18" failures="0" name="unitTests.CrudModelTest" time="1.479" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk1.8.0_281\jre\bin"/>
@@ -65,22 +65,22 @@
     <property name="sun.desktop" value="windows"/>
     <property name="sun.cpu.isalist" value="amd64"/>
   </properties>
-  <testcase classname="unitTests.CrudModelTest" name="a_crudModelShouldBuiltAValidInsertStatement" time="0.532"/>
-  <testcase classname="unitTests.CrudModelTest" name="b_crudModelShouldGrabAllFieldsInSelect" time="0.11"/>
-  <testcase classname="unitTests.CrudModelTest" name="c_crudModelShouldBuiltAValidUpdateStatement" time="0.043"/>
-  <testcase classname="unitTests.CrudModelTest" name="d_crudModelShouldThrowAnExceptionIfSetIsCalledTwice" time="0.013"/>
-  <testcase classname="unitTests.CrudModelTest" name="e_crudModelShouldThrowAnExceptionIfSetIsntCalledOnChange" time="0.019"/>
-  <testcase classname="unitTests.CrudModelTest" name="f_crudModelShouldThrowAnExceptionIfChangeHasNoArgs" time="0.009"/>
-  <testcase classname="unitTests.CrudModelTest" name="g_callingAddMultipleTimesShouldResetThePreparedStatement" time="0.007"/>
+  <testcase classname="unitTests.CrudModelTest" name="a_crudModelShouldBuiltAValidInsertStatement" time="0.555"/>
+  <testcase classname="unitTests.CrudModelTest" name="b_crudModelShouldGrabAllFieldsInSelect" time="0.115"/>
+  <testcase classname="unitTests.CrudModelTest" name="c_crudModelShouldBuiltAValidUpdateStatement" time="0.047"/>
+  <testcase classname="unitTests.CrudModelTest" name="d_crudModelShouldThrowAnExceptionIfSetIsCalledTwice" time="0.019"/>
+  <testcase classname="unitTests.CrudModelTest" name="e_crudModelShouldThrowAnExceptionIfSetIsntCalledOnChange" time="0.013"/>
+  <testcase classname="unitTests.CrudModelTest" name="f_crudModelShouldThrowAnExceptionIfChangeHasNoArgs" time="0.013"/>
+  <testcase classname="unitTests.CrudModelTest" name="g_callingAddMultipleTimesShouldResetThePreparedStatement" time="0.01"/>
   <testcase classname="unitTests.CrudModelTest" name="h_crudModelShouldThrowExceptionIfAddValuesIsntCalledAfterAdd" time="0.019"/>
-  <testcase classname="unitTests.CrudModelTest" name="i_crudModelShouldBuiltAValidWhereClause" time="0.014"/>
-  <testcase classname="unitTests.CrudModelTest" name="j_crudModelShouldThrowAnExceptionIfWhereIsCalledSequentially" time="0.012"/>
-  <testcase classname="unitTests.CrudModelTest" name="k_crudModelShouldThrowAnExceptionIfWhereIsCalledOnInsert" time="0.02"/>
-  <testcase classname="unitTests.CrudModelTest" name="l_crudModelShouldBuiltAValidDeleteStatement" time="0.014"/>
+  <testcase classname="unitTests.CrudModelTest" name="i_crudModelShouldBuiltAValidWhereClause" time="0.015"/>
+  <testcase classname="unitTests.CrudModelTest" name="j_crudModelShouldThrowAnExceptionIfWhereIsCalledSequentially" time="0.011"/>
+  <testcase classname="unitTests.CrudModelTest" name="k_crudModelShouldThrowAnExceptionIfWhereIsCalledOnInsert" time="0.016"/>
+  <testcase classname="unitTests.CrudModelTest" name="l_crudModelShouldBuiltAValidDeleteStatement" time="0.012"/>
   <testcase classname="unitTests.CrudModelTest" name="m_crudModelShouldntPermanantlyChangeDatabaseBeforeCommitIsCalled" time="0.021"/>
-  <testcase classname="unitTests.CrudModelTest" name="n_crudModelShouldPermanantlyChangeDatabaseAfterCommitIsCalled" time="0.097"/>
-  <testcase classname="unitTests.CrudModelTest" name="o_crudModelShouldPersistNonAutoCommitStateAfterFirstCommit" time="0.163"/>
-  <testcase classname="unitTests.CrudModelTest" name="p_crudModelShouldAutoCommitAfterTurnOnAutoCommitIsCalled" time="0.153"/>
-  <testcase classname="unitTests.CrudModelTest" name="q_crudModelShouldUndoTransactionsAfterRollback" time="0.25"/>
-  <testcase classname="unitTests.CrudModelTest" name="r_crudMethodShouldThrowAnExceptionIfAddIsGivenEmptyValue" time="0.017"/>
+  <testcase classname="unitTests.CrudModelTest" name="n_crudModelShouldPermanantlyChangeDatabaseAfterCommitIsCalled" time="0.088"/>
+  <testcase classname="unitTests.CrudModelTest" name="o_crudModelShouldPersistNonAutoCommitStateAfterFirstCommit" time="0.13"/>
+  <testcase classname="unitTests.CrudModelTest" name="p_crudModelShouldAutoCommitAfterTurnOnAutoCommitIsCalled" time="0.131"/>
+  <testcase classname="unitTests.CrudModelTest" name="q_crudModelShouldUndoTransactionsAfterRollback" time="0.248"/>
+  <testcase classname="unitTests.CrudModelTest" name="r_crudMethodShouldThrowAnExceptionIfAddIsGivenEmptyValue" time="0.016"/>
 </testsuite>

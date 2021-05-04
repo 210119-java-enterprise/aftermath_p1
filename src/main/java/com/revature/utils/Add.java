@@ -105,7 +105,6 @@ class Add<T> extends ModelScraper {
         }
 
         String psStr = ps.toString();
-        System.out.println(psStr);
         ps = conn.prepareStatement(psStr.substring(0, psStr.length() - 2));
 
         return ps.executeUpdate();
