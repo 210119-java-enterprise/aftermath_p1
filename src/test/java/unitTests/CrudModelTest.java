@@ -1,4 +1,5 @@
 package unitTests;
+import com.revature.exceptions.InvalidInputException;
 import com.revature.utils.ConnectionFactory;
 import com.revature.utils.CrudModel;
 import org.junit.FixMethodOrder;
@@ -8,6 +9,7 @@ import unitTests.mocks.Animal;
 import unitTests.mocks.Country;
 import unitTests.mocks.Weightlifter;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -18,7 +20,7 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CrudModelTest {
     @Test
-    public void a_metaModelShouldBuiltAValidInsertStatement() throws Exception {
+    public void a_crudModelShouldBuiltAValidInsertStatement() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -39,7 +41,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void b_metaModelShouldGrabAllFieldsInSelect() throws Exception {
+    public void b_crudModelShouldGrabAllFieldsInSelect() throws Exception {
         Properties props = new Properties();
 
         props.load(new FileReader("src/main/resources/application.properties"));
@@ -62,7 +64,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void c_metaModelShouldBuiltAValidUpdateStatement() throws Exception {
+    public void c_crudModelShouldBuiltAValidUpdateStatement() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -80,7 +82,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void d_metaModelShouldThrowAnExceptionIfSetIsCalledTwice() throws Exception {
+    public void d_crudModelShouldThrowAnExceptionIfSetIsCalledTwice() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -92,7 +94,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void e_metaModelShouldThrowAnExceptionIfSetIsntCalledOnChange() throws Exception {
+    public void e_crudModelShouldThrowAnExceptionIfSetIsntCalledOnChange() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -103,7 +105,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void f_metaModelShouldThrowAnExceptionIfChangeHasNoArgs() throws Exception {
+    public void f_crudModelShouldThrowAnExceptionIfChangeHasNoArgs() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -129,7 +131,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void h_metaModelShouldThrowExceptionIfAddValuesIsntCalledAfterAdd() throws Exception {
+    public void h_crudModelShouldThrowExceptionIfAddValuesIsntCalledAfterAdd() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -141,7 +143,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void i_metaModelShouldBuiltAValidWhereClause() throws Exception {
+    public void i_crudModelShouldBuiltAValidWhereClause() throws Exception {
         Properties props = new Properties();
 
         props.load(new FileReader("src/main/resources/application.properties"));
@@ -164,7 +166,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void j_metaModelShouldThrowAnExceptionIfWhereIsCalledSequentially() throws Exception {
+    public void j_crudModelShouldThrowAnExceptionIfWhereIsCalledSequentially() throws Exception {
         Properties props = new Properties();
 
         props.load(new FileReader("src/main/resources/application.properties"));
@@ -179,7 +181,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void k_metaModelShouldThrowAnExceptionIfWhereIsCalledOnInsert() throws Exception {
+    public void k_crudModelShouldThrowAnExceptionIfWhereIsCalledOnInsert() throws Exception {
         Properties props = new Properties();
 
         props.load(new FileReader("src/main/resources/application.properties"));
@@ -193,7 +195,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void l_metaModelShouldBuiltAValidDeleteStatement() throws Exception {
+    public void l_crudModelShouldBuiltAValidDeleteStatement() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -210,7 +212,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void m_metaModelShouldntPermanantlyChangeDatabaseBeforeCommitIsCalled() throws Exception {
+    public void m_crudModelShouldntPermanantlyChangeDatabaseBeforeCommitIsCalled() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -232,7 +234,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void n_metaModelShouldPermanantlyChangeDatabaseAfterCommitIsCalled() throws Exception {
+    public void n_crudModelShouldPermanantlyChangeDatabaseAfterCommitIsCalled() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -255,7 +257,7 @@ public class CrudModelTest {
 
 
     @Test
-    public void o_metaModelShouldPersistNonAutoCommitStateAfterFirstCommit() throws Exception {
+    public void o_crudModelShouldPersistNonAutoCommitStateAfterFirstCommit() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -279,7 +281,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void p_metaModelShouldAutoCommitAfterTurnOnAutoCommitIsCalled() throws Exception {
+    public void p_crudModelShouldAutoCommitAfterTurnOnAutoCommitIsCalled() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -304,7 +306,7 @@ public class CrudModelTest {
     }
 
     @Test
-    public void q_metaModelShouldUndoTransactionsAfterRollback() throws Exception {
+    public void q_crudModelShouldUndoTransactionsAfterRollback() throws Exception {
         Properties props = new Properties();
         props.load(new FileReader("src/main/resources/application.properties"));
         ConnectionFactory.addCredentials(props);
@@ -329,5 +331,17 @@ public class CrudModelTest {
         weightlifters.runCommit();
 
         System.out.println(weightlifters.getPreparedStatement());
+    }
+
+    @Test
+    public void r_crudMethodShouldThrowAnExceptionIfAddIsGivenEmptyValue() throws InvalidInputException, Exception {
+        Properties props = new Properties();
+        props.load(new FileReader("src/main/resources/application.properties"));
+        ConnectionFactory.addCredentials(props);
+        CrudModel<Weightlifter> weightlifters = new CrudModel<>(Weightlifter.class);
+
+        weightlifters.turnOffAutoCommit();
+
+        assertThrows(InvalidInputException.class, () -> weightlifters.add());
     }
 }
